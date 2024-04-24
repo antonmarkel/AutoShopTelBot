@@ -25,11 +25,17 @@ namespace TelegramBot.Telegram
                 AllowedUpdates = new[]
                 {
                     UpdateType.Message,
+                    UpdateType.CallbackQuery
                 },
                 ThrowPendingUpdates = true
             };
         }
 
+        public async Task SetRoute(string route,ChatId chat)
+        {
+            await TelegramRoutes.GetRenderByRoute(route, _botClient,chat);
+        }
+        
         public async Task Start()
         {
             using var cts = new CancellationTokenSource();
@@ -41,35 +47,43 @@ namespace TelegramBot.Telegram
 
        async Task UpdateHandler(ITelegramBotClient botClient,Update update,CancellationToken cancelTok)
         {
-            var message = update.Message;
-            //var user = message.From;
-            var chat = message.Chat;
+          
          
             try
-            {
-               
+            { 
                 switch (update.Type)
                 {
                     case UpdateType.Message:
                     {
-                            Console.WriteLine("Message Received");
-                            if (message.Text == "/test")
-                            {
-                                await TelegramPage.Open(_botClient, chat, new TelegramRoute("main"));
-                            }
-                            else
-                            {
-                                await botClient.SendTextMessageAsync(chat, "Иди нахуй даун ебанный");
-                            }
-                            
-                           
-                         return;
+                        var updateMessage = update.Message.Text;
+                        var chat = update.Message.Chat;
+                        if(updateMessage == "/start")
+                        {
+                            await SetRoute("main",chat);
+                        }
+                        return;
                     }
                     case UpdateType.CallbackQuery:
+                    {
+                        var callbackQuery = update.CallbackQuery;
+                        var chat = update.CallbackQuery.Message.Chat;
+                        Console.WriteLine(callbackQuery.Data);
+                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id,"Секунду");
+                        await SetRoute(callbackQuery.Data,chat);
+                        await Task.Delay(1000);
+                        if(TelegramRoutes.MessagesToDelete != null)
                         {
-                            await TelegramPage.Open(_botClient, chat, new TelegramRoute(update.CallbackQuery.Data));
-                            return;
+                            foreach(var message in TelegramRoutes.MessagesToDelete)
+                            {
+                                await _botClient.DeleteMessageAsync(chat, message.MessageId);
+                                await Task.Delay(200);
+                             }
+                            TelegramRoutes.MessagesToDelete = new List<Message>();
                         }
+                            await _botClient.DeleteMessageAsync(chat, callbackQuery.Message.MessageId);
+                        
+                        return;
+                    }
                 }
             }
             catch (Exception e)

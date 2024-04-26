@@ -53,34 +53,42 @@ namespace TelegramBot.Telegram
                 {
                     case UpdateType.Message:
                     {
+                        
                         var updateMessage = update.Message.Text;
                         var chat = update.Message.Chat;
                         if(updateMessage == "/start")
                         {
                             await SetRoute("main",chat);
                         }
+                        else if (updateMessage == "/admin")
+                         {
+                                if (Owner.OwnerAPI.Owners.FirstOrDefault((v) => v == ((ChatId)chat).Identifier) != 0)
+                                {
+                                    Owner.OwnerAPI.SetUpAdminPanel(chat, _botClient);
+                                }
+                         }
+                           
                         return;
                     }
                     case UpdateType.CallbackQuery:
                     {
                         var callbackQuery = update.CallbackQuery;
-                        var chat = update.CallbackQuery.Message.Chat;
+                       var chat = update.CallbackQuery.Message.Chat;
                         Console.WriteLine(callbackQuery.Data);
                         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id,"Секунду");
-                        await SetRoute(callbackQuery.Data,chat);
-                        await Task.Delay(1000);
+                        
                         if(TelegramRoutes.MessagesToDelete != null)
                         {
                             foreach(var message in TelegramRoutes.MessagesToDelete)
                             {
                                 await _botClient.DeleteMessageAsync(chat, message.MessageId);
-                                await Task.Delay(200);
+                                
                              }
                             TelegramRoutes.MessagesToDelete = new List<Message>();
                         }
-                            await _botClient.DeleteMessageAsync(chat, callbackQuery.Message.MessageId);
-                        
-                        return;
+                          await _botClient.DeleteMessageAsync(chat, callbackQuery.Message.MessageId);
+                          await SetRoute(callbackQuery.Data, chat);
+                         return;
                     }
                 }
             }

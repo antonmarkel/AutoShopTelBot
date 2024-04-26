@@ -7,17 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBot.Telegram
 {
     public class TelegramRoutes
     {
-        public static List<Message>? MessagesToDelete{ get; set; }
+        public static List<Message> MessagesToDelete { get; set; } = new List<Message>();
         public static InputMediaPhoto StartPicture { get; set; } = new InputMediaPhoto(InputFile.FromStream(new FileStream("Resources/test.jpg", FileMode.Open), fileName: "start.jpg"));
         public static InputMediaPhoto GemsPicture { get; set; } = new InputMediaPhoto(InputFile.FromStream(new FileStream("Resources/gems.jpg", FileMode.Open), fileName: "gems.jpg"));
   
-        public static async Task GetRenderPayment(ITelegramBotClient _botClient,ChatId chat, string item,int price,string routeBack)
+        public static async Task GetRenderPayment(ITelegramBotClient _botClient,ChatId chat, Item item,string routeBack)
         {
             var inlineKeyboard = new InlineKeyboardMarkup(
                             new List<InlineKeyboardButton[]>()
@@ -27,10 +28,9 @@ namespace TelegramBot.Telegram
                                    InlineKeyboardButton.WithCallbackData("Оплачено","main"),
                                    InlineKeyboardButton.WithCallbackData("Назад",routeBack)
                                  },
-
                             });
-            await _botClient.SendTextMessageAsync(chat, $"Вы собирайтесь оплатить товар {item} за {price}Р");
-            await _botClient.SendTextMessageAsync(chat, "Переведите  на любой из указанных реквизитов:\r\n\r\n💳 Тинькофф:\r\nСБП • +79939245527\r\n\r\n💳 Тинькофф:\r\nКарта • 2200700850594697\r\n\r\n💳 Сбер:\r\nКарта • 5336690284035310\r\n\r\nПосле оплаты пришлите чек/скрин оплаты в данный чат и нажмите кнопку \"Оплачено\"", replyMarkup: inlineKeyboard);
+            await item.SendItemAsync(_botClient, chat);
+            await _botClient.SendTextMessageAsync(chat, "<strong>Переведите  на любой из указанных реквизитов:</strong>\r\n\r\n💳 Тинькофф:\r\nСБП • +79939245527\r\n\r\n💳 Тинькофф:\r\nКарта • 2200700850594697\r\n\r\n💳 Сбер:\r\nКарта • 5336690284035310\r\n\r\nПосле оплаты пришлите чек/скрин оплаты в данный чат и нажмите кнопку \"Оплачено\"", replyMarkup: inlineKeyboard,parseMode:ParseMode.Html);
             return;
         }
         public static async Task GetRenderByRoute(string route,ITelegramBotClient _botClient,ChatId chat)
@@ -40,8 +40,7 @@ namespace TelegramBot.Telegram
             {
                 case "main":
                     {
-                     //  MessagesToDelete = (await _botClient.SendMediaGroupAsync(chat,
-                     //       new List<IAlbumInputMedia>() { StartPicture })).ToList();
+                     
 
 
                         inlineKeyboard = new InlineKeyboardMarkup(
@@ -155,53 +154,65 @@ namespace TelegramBot.Telegram
                     }
                 case "main/items/brawl/gems30":
                 {
-                        await GetRenderPayment(_botClient, chat, "Brawl Stars гемы 30", 249, "main/items/brawl");
+
+                        Item item = new Item() { Name = "Brawl Stars гемы (30)",Price = 249, Picture = Resources.Resources.GemsPict};
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
-                    }
+                  }
                 case "main/items/brawl/gems80":
                     {
-                        await GetRenderPayment(_botClient, chat, "Brawl Stars гемы 80", 549, "main/items/brawl");
+                        Item item = new Item() { Name = "Brawl Stars гемы (80)", Price = 549, Picture = Resources.Resources.GemsPict };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
                 case "main/items/brawl/gems170":
                     {
-                        await GetRenderPayment(_botClient, chat, "Brawl Stars гемы 170", 999, "main/items/brawl");
+                        Item item = new Item() { Name = "Brawl Stars гемы (170)", Price = 999, Picture = Resources.Resources.GemsPict };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
                 case "main/items/brawl/gems360":
                     {
-                        await GetRenderPayment(_botClient, chat, "Brawl Stars гемы 360", 1999, "main/items/brawl");
+                        Item item = new Item() { Name = "Brawl Stars гемы (360)", Price = 1999, Picture = Resources.Resources.GemsPict };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
+                      
                         return;
                     }
                 case "main/items/brawl/gems950":
                     {
-                        await GetRenderPayment(_botClient, chat, "Brawl Stars гемы 950", 4499, "main/items/brawl");
+                        Item item = new Item() { Name = "Brawl Stars гемы (950)", Price = 4499, Picture = Resources.Resources.GemsPict };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
 
                 case "main/items/brawl/gems2000":
                     {
-                        await GetRenderPayment(_botClient, chat, "Brawl Stars гемы 2000", 8999, "main/items/brawl");
+                        Item item = new Item() { Name = "Brawl Stars гемы (2000)", Price = 8999, Picture = Resources.Resources.GemsPict };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
                 case "main/items/brawl/pass":
                     {
-                        await GetRenderPayment(_botClient, chat, "Brawl Pass", 749, "main/items/brawl");
+                        Item item = new Item() { Name = "Brawl Pass", Price = 749,  };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
                 case "main/items/brawl/passplus":
                     {
-                        await GetRenderPayment(_botClient, chat, "Brawl Pass +", 1049, "main/items/brawl");
+                        Item item = new Item() { Name = "Brawl Pass +", Price = 1049, };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
                 case "main/items/brawl/WPupgrate":
                     {
-                        await GetRenderPayment(_botClient, chat, "Улучшение БП на БП+", 449, "main/items/brawl");
+                        Item item = new Item() { Name = "Улучшение БП на БП+", Price = 449, };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
                 case "main/items/brawl/lili":
                     {
-                        await GetRenderPayment(_botClient, chat, "Новый персонаж Лили", 1999, "main/items/brawl");
+                        Item item = new Item() { Name = "Новый персонаж Лили", Price = 1999, };
+                        await GetRenderPayment(_botClient, chat, item, "main/items/brawl");
                         return;
                     }
 

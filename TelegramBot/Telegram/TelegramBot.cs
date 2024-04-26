@@ -47,8 +47,6 @@ namespace TelegramBot.Telegram
 
        async Task UpdateHandler(ITelegramBotClient botClient,Update update,CancellationToken cancelTok)
         {
-          
-         
             try
             { 
                 switch (update.Type)

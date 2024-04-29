@@ -22,7 +22,8 @@ namespace TelegramBot.TelegramAPI
     }
     public class TelegramBot
     {
-     
+
+        public Dictionary<ChatId, int> CurrentPurchase { get; set; } = new Dictionary<ChatId, int>();
         public Dictionary<ChatId, ChatState> ChatStates { get; set; } = new Dictionary<ChatId, ChatState>();
         public  Dictionary<ChatId, List<Message>> MessagesToDelete { get; set; } = new Dictionary<ChatId, List<Message>>();
         public  Dictionary<ChatId, List<Item>> Cart { get; set; } = new Dictionary<ChatId, List<Item>>();
@@ -54,7 +55,7 @@ namespace TelegramBot.TelegramAPI
         public async Task Start()
         {
             using var cts = new CancellationTokenSource();
-            //
+            TelegramRoutes._Bot = this;
             _botClient.StartReceiving(UpdateHandler, ErrorHanlder, _receiverOptions, cts.Token);
             Console.WriteLine("Bot started");
             await Task.Delay(-1);
@@ -91,27 +92,35 @@ namespace TelegramBot.TelegramAPI
                 {
                     case UpdateType.Message:
                     {
-                        if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
+                        
                         var updateMessage = update.Message.Text;
                         var chat = update.Message.Chat;
 
                         if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
-
+                        if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
                             //  Console.WriteLine($"{update.Message.Photo[0].FileId}");
                             //       return;
 
-                         if (ChatStates[update.Message.Chat] != ChatState.GetData)
+                            if (ChatStates[update.Message.Chat] == ChatState.GetData)
                             {
                                 var message = update.Message.Text;
-                                foreach(var owner in Owner.OwnerAPI.Owners)
-                                {
-                                    var cChat = new ChatId(owner);
-                                    _botClient.SendTextMessageAsync(cChat, message);
-                                }
-                                
-                            } 
+                                Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]).Data += "\r\n" + message;
+                                var state = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]).State;
+                                await Context.SaveChangesAsync();
+                                await Owner.OwnerAPI.NotifyOnwerAboutIncomingData(_botClient, this, chat, state);
+                                return;
+                            }
 
-                            if (updateMessage == "/start")
+                            if (updateMessage == "Входящие заказы")
+                            {
+                                if (await Owner.OwnerAPI.IsOwner(chat))
+                                {
+                                    await Owner.OwnerAPI.ShowIncomingTasks(chat, _botClient);
+                                }
+                            }
+
+                            
+                        if (updateMessage == "/start")
                         {
                             await SetRoute("main",chat);
                         }
@@ -137,11 +146,30 @@ namespace TelegramBot.TelegramAPI
                     }
                     case UpdateType.CallbackQuery:
                     {
-                            if (ChatStates[update.Message.Chat] != ChatState.Standard) return;
-                            if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
-                            var callbackQuery = update.CallbackQuery;
-                       var chat = update.CallbackQuery.Message.Chat;                   
-                       if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
+                            
+                       
+                      var callbackQuery = update.CallbackQuery;
+                      var chat = update.CallbackQuery.Message.Chat;
+                       if (!ChatStates.ContainsKey(chat)) ChatStates.Add(chat, ChatState.Standard);
+                       if (ChatStates[chat] != ChatState.Standard) {
+                            if(callbackQuery.Data == "main")
+                            { 
+                               ChatStates[chat] = ChatState.Standard;
+                            }
+                            else if (callbackQuery.Data == "main/new")
+                            {
+                               await Owner.OwnerAPI.NotifyOnwers(_botClient, "Ебать,у нас новый заказ нахуй!");
+                               await SetRoute("main", chat);
+                                    ChatStates[chat] = ChatState.Standard;
+                                await ClearCart(chat, showMessage: false);
+                                    return;
+                            }
+                           else return;
+                        }
+                            
+                        
+
+                            if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
                        Console.WriteLine(callbackQuery.Data);
                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id,"Секунду");
                         

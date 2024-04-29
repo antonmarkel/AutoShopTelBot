@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.TelegramAPI;
 
 namespace TelegramBot.Owner
 {
@@ -56,13 +57,27 @@ namespace TelegramBot.Owner
             _botClient.SendTextMessageAsync(chat, "Admin Panel", replyMarkup: replyKeyboard);
         }
 
-        public static async Task ShowAllTasks(ChatId chat,ITelegramBotClient _botClient)
+        public static async Task NotifyOnwerAboutIncomingData(ITelegramBotClient _botClient, TelegramAPI.TelegramBot bot, ChatId chat,ushort state)
         {
+            foreach(var owner in Owners)
+            {
+                ChatId chatOwner = new ChatId(owner);
+                if(state == 1) await _botClient.SendTextMessageAsync(chatOwner, $"Получен код для заказа {bot.CurrentPurchase[chat]}");
+            }
+        }
+        public static async Task NotifyOnwers(ITelegramBotClient _botClient, string message)
+        {
+            foreach (var owner in Owners)
+            {
+                ChatId chatOwner = new ChatId(owner);
+                await _botClient.SendTextMessageAsync(chatOwner,message); 
+            }
+        }
 
-           
-
-
-            foreach (var item in TelegramAPI.TelegramBot.Context.Purchases)
+        public static async Task ShowIncomingTasks(ChatId chat,ITelegramBotClient _botClient)
+        {
+            var purchases = TelegramAPI.TelegramBot.Context.Purchases.Where(v => v.State == 0).ToList();
+            foreach (var item in purchases)
             {
                 InlineKeyboardMarkup inlineKeyboard = null;                
                 if(item.State == 0)
@@ -73,67 +88,28 @@ namespace TelegramBot.Owner
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Выполнить(предупредить пользователя)","warn/" + $"{item.CustomerID}" + "|" + $"{item.ID}" + "|" + $"{chat.Identifier}"),
+                                    InlineKeyboardButton.WithCallbackData("Запросить код","warn/" + $"{item.CustomerID}" + "|" + $"{item.ID}" + "|" + $"{chat.Identifier}"),
 
                                  },
                                   new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Назад","Main")
                                  },
-
-                         });
-                }else if(item.State == 1)
-                {
-                    inlineKeyboard = new InlineKeyboardMarkup(
-                        new List<InlineKeyboardButton[]>()
-                         {
-
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Заказ завершен(сообщить покупателю)","done/" + $"{item.CustomerID}" + "|" + $"{item.ID}"),
+                                    InlineKeyboardButton.WithCallbackData("Отменить заказ(email)",$"emer|{item.CustomerID}|{item.ID}")
 
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Назад","Main")
+                                    InlineKeyboardButton.WithCallbackData("Отменить заказ(оплата)",$"empa|{item.CustomerID}|{item.ID}")
+
                                  },
 
-                        });
+                         }) ;
                 }
-                else if (item.State == 1)
-                {
-                    inlineKeyboard = new InlineKeyboardMarkup(
-                        new List<InlineKeyboardButton[]>()
-                         {
-
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Заказ завершен(сообщить покупателю)","done/" + $"{item.CustomerID}" + "|" + $"{item.ID}"),
-
-                                 },
-                                  new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Неправильный email","Main")
-                                 },
-                                  new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Назад","Main")
-                                 },
-
-                        });
-                }
-
-
-
-                
-                    
-                    
-                
-                await _botClient.SendTextMessageAsync(chat, $"{item.ID} {item.GetStringState()}\n\r{item.CustomerName}\r\n{item.Goods}\r\n{item.Date}",replyMarkup:inlineKeyboard);
+                await _botClient.SendTextMessageAsync(chat, $"{item.ID} {item.GetStringState()}\n\r{item.CustomerName}\r\n{item.Data}\r\n{item.Goods}\r\n{item.Date}",replyMarkup:inlineKeyboard);
             }
-            
-            
-
         }
     }
 }

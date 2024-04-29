@@ -48,9 +48,9 @@ namespace TelegramBot.TelegramAPI
                 var item = Items.All.FirstOrDefault(v => v.Identifier == good);
                 if (item != null)
                 {
-                    if (!TelegramBot.Cart.ContainsKey(chat))
+                    if (!_Bot.Cart.ContainsKey(chat))
                     {
-                        TelegramBot.Cart.Add(chat, new List<Item>());
+                        _Bot.Cart.Add(chat, new List<Item>());
                     }
                      inlineKeyboard = new InlineKeyboardMarkup(
                               new List<InlineKeyboardButton[]>()
@@ -62,7 +62,7 @@ namespace TelegramBot.TelegramAPI
                                  },
                               });
                     await _botClient.SendTextMessageAsync(chat, "Товар добавлен в корзину!", replyMarkup: inlineKeyboard);
-                    TelegramBot.Cart[chat].Add(item);
+                    _Bot.Cart[chat].Add(item);
                 }
                 return;
             }
@@ -141,7 +141,7 @@ namespace TelegramBot.TelegramAPI
 
                 case "main":
                     {
-                        TelegramBot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.MainPict })).ToList());
+                        _Bot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.MainPict })).ToList());
 
                         inlineKeyboard = new InlineKeyboardMarkup(
                              new List<InlineKeyboardButton[]>()
@@ -170,12 +170,11 @@ namespace TelegramBot.TelegramAPI
                     }
                 case "main/feedback":
                     {
-                        TelegramBot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.FeedBackPict })).ToList());
+                        _Bot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.FeedBackPict })).ToList());
 
                         inlineKeyboard = new InlineKeyboardMarkup(
                             new List<InlineKeyboardButton[]>()
-                             {
-
+                            { 
                                  new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Назад","main"),
@@ -192,9 +191,9 @@ namespace TelegramBot.TelegramAPI
                     {
                         decimal sum = 0;
                         StringBuilder _goods = new StringBuilder();
-                        if (TelegramBot.Cart[chat].Count > 0)
+                        if (_Bot.Cart[chat].Count > 0)
                         {
-                            foreach (var item in TelegramBot.Cart[chat])
+                            foreach (var item in _Bot.Cart[chat])
                             {
                                 _goods.Append(item.Category + ": " + item.Name + "\r\n");
                                 sum += item.Price;
@@ -203,8 +202,20 @@ namespace TelegramBot.TelegramAPI
                         int id = (new Random()).Next();
                         while (TelegramBot.Context.Purchases.FirstOrDefault(v => v.ID == id) != null) id = (new Random()).Next();
                         await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n✅ Процесс: Получение\r\n⏰ Время: {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}\r\n\r\n Спасибо за покупку! Заказы выполняются в течение 30 минут!\r\n\r\n 🏦 Если возникнут вопросы - обратитесь в поддержку: @firov1",parseMode:ParseMode.Html);
-                        Purchase purchase = new Purchase(id, chat.Identifier, chat.Username, _goods.ToString(), DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString(), 0);
-           
+                        Purchase purchase = new Purchase(id, chat.Identifier, chat.Username, _goods.ToString(), DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString(), 0,string.Empty);
+                        _Bot.ChatStates[chat] = ChatState.GetData;
+                        await _botClient.SendTextMessageAsync(chat, "Введите неоходбимую информация для входа в аккаунты для игр(ы) указанной(ых) в заказе");
+                        var stopEnterDataKeyboard = new InlineKeyboardMarkup(
+                         new List<InlineKeyboardButton[]>()
+                          {
+                                new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Отправить","main/paid"),
+                                 },         
+                         });
+                      
+
+                        await _botClient.SendTextMessageAsync(chat, "После того как вы ввели всю необходимую информацию, нажмиет отправить", replyMarkup: stopEnterDataKeyboard);
                         await TelegramBot.Context.Purchases.AddAsync(purchase);
                         await TelegramBot.Context.SaveChangesAsync();
 
@@ -216,9 +227,9 @@ namespace TelegramBot.TelegramAPI
                     {
                         decimal sum = 0;
                         StringBuilder _goods = new StringBuilder();
-                        if (TelegramBot.Cart[chat].Count > 0)
+                        if (_Bot.Cart[chat].Count > 0)
                         {
-                            foreach (var item in TelegramBot.Cart[chat])
+                            foreach (var item in _Bot.Cart[chat])
                             {
                                 _goods.Append(item.Category + ": " + item.Name + "\r\n");
                                 sum += item.Price;
@@ -244,7 +255,7 @@ namespace TelegramBot.TelegramAPI
                         int id = (new Random()).Next();
                         while (TelegramBot.Context.Purchases.FirstOrDefault(v => v.ID == id) != null) id = (new Random()).Next();
                         await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n💴 Процесс: Оплата\r\n🏦 Для оплаты Вы должны перевести {sum}Р по любому из данных реквизитов и <strong>!!! написать {id} в сообщениях к оплате!!!</strong>. После оплаты нажмите \"Я оплатил\".\r\n\r\n🎫 Реквизиты:\r\n\r\nТинькофф • +79939245527\r\nТинькофф • 2200700850594697\r\nСбер • 5336690284035310\r\n\r\n⚠️ Чтобы вы не потеряли вашу оплату, зафиксируйте данный перевод с номером заказа на скриншот/видео. \r\n\r\n🙋‍♂️ Если возникнут вопросы - обратитесь в поддержку: @firov1",replyMarkup:cancelPayKeyboard, parseMode: ParseMode.Html);
-                            Purchase purchase = new Purchase(id,chat.Identifier,chat.Username, _goods.ToString(), DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString(),0);
+                            Purchase purchase = new Purchase(id,chat.Identifier,chat.Username, _goods.ToString(), DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString(),0,string.Empty);
  
                      
                         return;
@@ -255,7 +266,7 @@ namespace TelegramBot.TelegramAPI
 
                         if(purches.Count == 0)
                         {
-
+                            //TODO: Еще ничего не покупал
                         }
                         else
                         {
@@ -286,14 +297,14 @@ namespace TelegramBot.TelegramAPI
                     }
                 case "main/cart":
                     {
-                        TelegramBot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.CartPict })).ToList());
+                        _Bot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.CartPict })).ToList());
                         StringBuilder answer = new StringBuilder();
-                        if (!TelegramBot.Cart.ContainsKey(chat)) TelegramBot.Cart.Add(chat, new List<Item>());
+                        if (!_Bot.Cart.ContainsKey(chat)) _Bot.Cart.Add(chat, new List<Item>());
                         decimal sum = 0;
                         answer.Append("<strong> Ваши товары:</strong>\r\n\r\n");
-                        if (TelegramBot.Cart[chat].Count > 0)
+                        if (_Bot.Cart[chat].Count > 0)
                         {
-                            foreach (var item in TelegramBot.Cart[chat])
+                            foreach (var item in _Bot.Cart[chat])
                             {
                                 answer.Append("\r\n");
                                 answer.Append("\"" + item.Name + "\" - " + item.Price.ToString() + "₽");
@@ -381,7 +392,7 @@ namespace TelegramBot.TelegramAPI
                          }
                         )).ToList();*/
 
-                        TelegramBot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.BrawlPict })).ToList());
+                        _Bot.MessagesToDelete[chat].AddRange((await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Resources.Resources.BrawlPict })).ToList());
                         inlineKeyboard = new InlineKeyboardMarkup(
                              new List<InlineKeyboardButton[]>()
                               {

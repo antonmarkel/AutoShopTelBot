@@ -14,10 +14,18 @@ using TelegramBot.Data;
 
 namespace TelegramBot.TelegramAPI
 {
+    public enum ChatState : ushort
+    {
+        Standard = 0,
+        GetData = 1,
+        OwnerChat = 2,
+    }
     public class TelegramBot
     {
-        public static Dictionary<ChatId, List<Message>> MessagesToDelete { get; set; } = new Dictionary<ChatId, List<Message>>();
-        public static Dictionary<ChatId, List<Item>> Cart { get; set; } = new Dictionary<ChatId, List<Item>>();
+     
+        public Dictionary<ChatId, ChatState> ChatStates { get; set; } = new Dictionary<ChatId, ChatState>();
+        public  Dictionary<ChatId, List<Message>> MessagesToDelete { get; set; } = new Dictionary<ChatId, List<Message>>();
+        public  Dictionary<ChatId, List<Item>> Cart { get; set; } = new Dictionary<ChatId, List<Item>>();
         public static BotDataContext Context { get; set; } = new BotDataContext();
         private ITelegramBotClient _botClient;
         private ReceiverOptions _receiverOptions;
@@ -54,7 +62,7 @@ namespace TelegramBot.TelegramAPI
 
     public async Task ClearCart(ChatId chat,bool showMessage = true)
         {
-            bool isEmpty = TelegramBot.Cart[chat].Count == 0;
+            bool isEmpty = Cart[chat].Count == 0;
             Cart[chat].Clear();
             if (showMessage)
             {
@@ -75,25 +83,37 @@ namespace TelegramBot.TelegramAPI
 
        async Task UpdateHandler(ITelegramBotClient botClient,Update update,CancellationToken cancelTok)
         {
+
+           
             try
             { 
                 switch (update.Type)
                 {
                     case UpdateType.Message:
                     {
-                       
+                        if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
                         var updateMessage = update.Message.Text;
                         var chat = update.Message.Chat;
 
                         if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
-                      
-                         //  Console.WriteLine($"{update.Message.Photo[0].FileId}");
-                         //       return;
-                       
 
-                        if (updateMessage == "/start")
+                            //  Console.WriteLine($"{update.Message.Photo[0].FileId}");
+                            //       return;
+
+                         if (ChatStates[update.Message.Chat] != ChatState.GetData)
+                            {
+                                var message = update.Message.Text;
+                                foreach(var owner in Owner.OwnerAPI.Owners)
+                                {
+                                    var cChat = new ChatId(owner);
+                                    _botClient.SendTextMessageAsync(cChat, message);
+                                }
+                                
+                            } 
+
+                            if (updateMessage == "/start")
                         {
-                            await SetRoute("hello",chat);
+                            await SetRoute("main",chat);
                         }
                         else if (updateMessage == "На главную страницу")
                         {
@@ -105,7 +125,7 @@ namespace TelegramBot.TelegramAPI
                          {
                                 if (await Owner.OwnerAPI.IsOwner(chat))
                                 {
-                                    await Owner.OwnerAPI.ShowAllTasks(chat, _botClient);
+                                    await Owner.OwnerAPI.OwnerMenu(_botClient, chat);
                                 }
                                 else
                                 {
@@ -117,13 +137,15 @@ namespace TelegramBot.TelegramAPI
                     }
                     case UpdateType.CallbackQuery:
                     {
-                       var callbackQuery = update.CallbackQuery;
+                            if (ChatStates[update.Message.Chat] != ChatState.Standard) return;
+                            if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
+                            var callbackQuery = update.CallbackQuery;
                        var chat = update.CallbackQuery.Message.Chat;                   
                        if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
                        Console.WriteLine(callbackQuery.Data);
                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id,"Секунду");
                         
-                       
+                      
                        foreach(var message in MessagesToDelete[chat])
                        {
                            await _botClient.DeleteMessageAsync(chat, message.MessageId); 

@@ -19,6 +19,27 @@ namespace TelegramBot.Owner
             return Owners.FirstOrDefault(v => v == chatId.Identifier) != 0;
         }
 
+        public static async Task OwnerMenu(ITelegramBotClient _botclient,ChatId chatId)
+        {
+            var replyKeyboard = new ReplyKeyboardMarkup(
+                                  new List<KeyboardButton[]>()
+                                  {
+                                        new KeyboardButton[]
+                                        {
+                                            new KeyboardButton("Входящие заказы"),
+                                        },
+                                         new KeyboardButton[]
+                                        {
+                                            new KeyboardButton("Активные заказы"),
+                                        },
+                                          new KeyboardButton[]
+                                        {
+                                            new KeyboardButton("Завершенные заказы"),
+                                        },
+
+                                  });
+            await _botclient.SendTextMessageAsync(chatId,"Привествуем, хозяин!",replyMarkup:replyKeyboard);
+        }
 
 
         public static async Task SetUpAdminPanel(ChatId chat,ITelegramBotClient _botClient)

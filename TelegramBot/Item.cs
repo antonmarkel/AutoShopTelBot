@@ -34,7 +34,7 @@ public class Item
         public string Description { get; set; } = string.Empty;
         public string Category { get;set; } = string.Empty;
         public decimal Price { get; set; }
-        public InputMediaPhoto Picture { get; set; }
+        public InputFile Picture { get; set; }
         public async Task SendItemAsync(ITelegramBotClient _botClient, ChatId chat)
         {
             var inlineKeyboard = new InlineKeyboardMarkup(

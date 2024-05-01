@@ -42,29 +42,6 @@ namespace TelegramBot.Owner
             await _botclient.SendTextMessageAsync(chatId,"Привествуем, хозяин!",replyMarkup:replyKeyboard);
         }
 
-
-        public static async Task SetUpAdminPanel(ChatId chat,ITelegramBotClient _botClient)
-        {
-            var replyKeyboard = new ReplyKeyboardMarkup(
-                                  new List<KeyboardButton[]>()
-                                  {
-                                        new KeyboardButton[]
-                                        {
-                                            new KeyboardButton("Просмотреть заказы"),
-                                        },
-                                     
-                                  });
-            _botClient.SendTextMessageAsync(chat, "Admin Panel", replyMarkup: replyKeyboard);
-        }
-
-        public static async Task NotifyOnwerAboutIncomingData(ITelegramBotClient _botClient, TelegramAPI.TelegramBot bot, ChatId chat,ushort state)
-        {
-            foreach(var owner in Owners)
-            {
-                ChatId chatOwner = new ChatId(owner);
-                if(state == 1) await _botClient.SendTextMessageAsync(chatOwner, $"Получен код для заказа {bot.CurrentPurchase[chat]}");
-            }
-        }
         public static async Task NotifyOnwers(ITelegramBotClient _botClient, string message)
         {
             foreach (var owner in Owners)
@@ -74,21 +51,18 @@ namespace TelegramBot.Owner
             }
         }
 
-        public static async Task ShowIncomingTasks(ChatId chat,ITelegramBotClient _botClient)
+        public static async Task ShowIncomingTasks(ChatId chat,ITelegramBotClient _botClient,TelegramAPI.TelegramBot _Bot)
         {
-            var purchases = TelegramAPI.TelegramBot.Context.Purchases.Where(v => v.State == 0).ToList();
-            foreach (var item in purchases)
-            {
-                InlineKeyboardMarkup inlineKeyboard = null;                
-                if(item.State == 0)
-                {
-                    inlineKeyboard = new InlineKeyboardMarkup(
+            var purchases = _Bot.Context.Purchases.Where(v => v.State == 0).ToList();
+            for(int i = 0;i < purchases.Count;i++) { 
+                var purch = purchases[i];   
+                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
                          new List<InlineKeyboardButton[]>()
                           {
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Запросить код","warn/" + $"{item.CustomerID}" + "|" + $"{item.ID}" + "|" + $"{chat.Identifier}"),
+                                    InlineKeyboardButton.WithCallbackData("Запросить код","warn/" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
 
                                  },
                                   new InlineKeyboardButton[]
@@ -97,18 +71,92 @@ namespace TelegramBot.Owner
                                  },
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Отменить заказ(email)",$"emer|{item.CustomerID}|{item.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Запросить имейл еще раз",$"emer|{purch.CustomerID}|{purch.ID}")
 
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Отменить заказ(оплата)",$"empa|{item.CustomerID}|{item.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Нет оплаты",$"empa|{purch.CustomerID}|{purch.ID}")
 
                                  },
 
                          }) ;
+                StringBuilder goodsString = new StringBuilder();
+                for(int j = 0;j < purch.Goods.Count;j++)
+                {
+                    var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
+                    goodsString.Append($"{j+1}) {item.Category} : {item.Name}\r\n");
                 }
-                await _botClient.SendTextMessageAsync(chat, $"{item.ID} {item.GetStringState()}\n\r{item.CustomerName}\r\n{item.Data}\r\n{item.Goods}\r\n{item.Date}",replyMarkup:inlineKeyboard);
+                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+                string fuckSym = "_*[]()~>#+-=|{}.!";
+                StringBuilder normalAnswer = new StringBuilder();
+                for(int j = 0;j < preAnswer.Length;j++)
+                {
+                    if (fuckSym.Contains(preAnswer[j]))
+                    {
+                        normalAnswer.Append("\\");
+                    }
+                    normalAnswer.Append(preAnswer[j]);
+                }
+               Console.WriteLine(normalAnswer.ToString());  
+                await _botClient.SendTextMessageAsync(chat,normalAnswer.ToString(), replyMarkup: inlineKeyboard, parseMode:Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+            }
+        }
+        public static async Task ShowActiveTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
+        {
+            var purchases = _Bot.Context.Purchases.Where(v => v.State == 1).ToList();
+            for(int i = 0;i <  purchases.Count;i++) 
+            {
+                var purch = purchases[i];
+                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
+                         new List<InlineKeyboardButton[]>()
+                          {
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Завершен","done|" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
+
+                                 }, 
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.ID}")
+
+                                 },
+                                    new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Назад","Main")
+                                 },
+
+                         });
+                StringBuilder goodsString = new StringBuilder();
+                for (int j = 0; j < purch.Goods.Count; j++)
+                {
+                    var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
+                    goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
+                }
+                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+                string fuckSym = "_*[]()~>#+-=|{}.!";
+                StringBuilder normalAnswer = new StringBuilder();
+                for (int j = 0; j < preAnswer.Length; j++)
+                {
+                    if (fuckSym.Contains(preAnswer[j]))
+                    {
+                        normalAnswer.Append("\\");
+                    }
+                    normalAnswer.Append(preAnswer[j]);
+                }
+
+
+                await _botClient.SendTextMessageAsync(chat, normalAnswer.ToString(), replyMarkup: inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+            }
+        }
+        public static async Task ShowFinishedTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
+        {
+            var purchases = _Bot.Context.Purchases.Where(v => v.State == 2).ToList();
+            foreach (var item in purchases)
+            {
+
+                await _botClient.SendTextMessageAsync(chat, $"{item.ID} {item.GetStringState()}\n\r{item.CustomerName}\r\n{item.Data}\r\n{item.Goods}\r\n{item.Date}");
             }
         }
     }

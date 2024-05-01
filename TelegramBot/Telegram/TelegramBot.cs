@@ -22,12 +22,12 @@ namespace TelegramBot.TelegramAPI
     }
     public class TelegramBot
     {
-
+        public long GroupId { get; set; } = -1002091931355;
         public Dictionary<ChatId, int> CurrentPurchase { get; set; } = new Dictionary<ChatId, int>();
         public Dictionary<ChatId, ChatState> ChatStates { get; set; } = new Dictionary<ChatId, ChatState>();
         public  Dictionary<ChatId, List<Message>> MessagesToDelete { get; set; } = new Dictionary<ChatId, List<Message>>();
         public  Dictionary<ChatId, List<Item>> Cart { get; set; } = new Dictionary<ChatId, List<Item>>();
-        public static BotDataContext Context { get; set; } = new BotDataContext();
+        public  BotDataContext Context { get; set; } = new BotDataContext();
         private ITelegramBotClient _botClient;
         private ReceiverOptions _receiverOptions;
         public TelegramBot(string token)
@@ -86,12 +86,16 @@ namespace TelegramBot.TelegramAPI
         {
 
            
+           
             try
             { 
                 switch (update.Type)
                 {
                     case UpdateType.Message:
                     {
+                       if (update.Message.Chat.Id == GroupId) return;
+     
+                       Console.WriteLine(update.Message.Chat.Id);
                         
                         var updateMessage = update.Message.Text;
                         var chat = update.Message.Chat;
@@ -103,11 +107,25 @@ namespace TelegramBot.TelegramAPI
 
                             if (ChatStates[update.Message.Chat] == ChatState.GetData)
                             {
+                                Console.WriteLine("t");
                                 var message = update.Message.Text;
-                                Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]).Data += "\r\n" + message;
-                                var state = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]).State;
+                                var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
+                                var state = purch.State;
                                 await Context.SaveChangesAsync();
-                                await Owner.OwnerAPI.NotifyOnwerAboutIncomingData(_botClient, this, chat, state);
+                                if (purch.State == 0)
+                                {
+                                    purch.Data +="\r\nEmail: " + message;
+                                    await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
+                                    await Owner.OwnerAPI.NotifyOnwers(_botClient, "Едрить колитить - новый заказ,или обнова на прошлый");
+                                }
+                                if (purch.State == 1)
+                                {
+                                    purch.Data += "\r\nCode: " + "`" + message + "`"; 
+                                    await Owner.OwnerAPI.NotifyOnwers(_botClient, "Пришел код к активному заказу");
+                                }
+                                ChatStates[chat] = ChatState.Standard;
+                                await SetRoute("main", chat);
+                               
                                 return;
                             }
 
@@ -115,14 +133,27 @@ namespace TelegramBot.TelegramAPI
                             {
                                 if (await Owner.OwnerAPI.IsOwner(chat))
                                 {
-                                    await Owner.OwnerAPI.ShowIncomingTasks(chat, _botClient);
+                                    await Owner.OwnerAPI.ShowIncomingTasks(chat, _botClient, this);
                                 }
                             }
-
-                            
+                            if (updateMessage == "Активные заказы")
+                            {
+                                if (await Owner.OwnerAPI.IsOwner(chat))
+                                {
+                                    await Owner.OwnerAPI.ShowActiveTasks(chat, _botClient,this);
+                                }
+                            }
+                            if (updateMessage == "Завершенные заказы")
+                            {
+                                if (await Owner.OwnerAPI.IsOwner(chat))
+                                {
+                                    await Owner.OwnerAPI.ShowFinishedTasks(chat, _botClient, this);
+                                }
+                            }
+                           
                         if (updateMessage == "/start")
                         {
-                            await SetRoute("main",chat);
+                            await SetRoute("hello",chat);
                         }
                         else if (updateMessage == "На главную страницу")
                         {
@@ -146,9 +177,9 @@ namespace TelegramBot.TelegramAPI
                     }
                     case UpdateType.CallbackQuery:
                     {
-                            
-                       
-                      var callbackQuery = update.CallbackQuery;
+
+                      if (update.CallbackQuery.Message.Chat.Id == GroupId) return;
+                        var callbackQuery = update.CallbackQuery;
                       var chat = update.CallbackQuery.Message.Chat;
                        if (!ChatStates.ContainsKey(chat)) ChatStates.Add(chat, ChatState.Standard);
                        if (ChatStates[chat] != ChatState.Standard) {
@@ -156,6 +187,10 @@ namespace TelegramBot.TelegramAPI
                             { 
                                ChatStates[chat] = ChatState.Standard;
                             }
+                            else if (callbackQuery.Data[0..4] == "emer")
+                             {
+                                    ChatStates[chat] = ChatState.Standard;
+                             }
                             else if (callbackQuery.Data == "main/new")
                             {
                                await Owner.OwnerAPI.NotifyOnwers(_botClient, "Ебать,у нас новый заказ нахуй!");

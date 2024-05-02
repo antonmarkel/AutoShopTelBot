@@ -541,7 +541,75 @@ namespace TelegramBot.TelegramAPI
                         await _botClient.SendPhotoAsync(chat,Resources.Resources.BrawlPict,caption: "Товары доступные для Brawl Stars", replyMarkup: inlineKeyboard);
                         return;
                     }
-                }
+                case "main/items/royale":
+                    {
+                        inlineKeyboard = new InlineKeyboardMarkup(
+                            new List<InlineKeyboardButton[]>()
+                              {
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/clgems80"),
+                                    InlineKeyboardButton.WithCallbackData("500 гемов","buy/clgems500"),
+                                    InlineKeyboardButton.WithCallbackData("1200 гемов","buy/clgems1200"),
+                                 },
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("2500 гемов","buy/clgems2500"),
+                                    InlineKeyboardButton.WithCallbackData("6500 гемов","buy/clgems6500"),
+                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clgems14000"),
+                                 },
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Золотой пропуск","buy/clgoldpass"),
+                                     InlineKeyboardButton.WithCallbackData("Алмазный пропуск","buy/clironpass"),
+
+                                 },
+                                   new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Назад","main/items"),
+                                 },
+                             });
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.BrawlPict, caption: "Товары доступные для Clash Royale", replyMarkup: inlineKeyboard);
+                        return;
+                    }
+                case "main/items/clans":
+                    {
+                        inlineKeyboard = new InlineKeyboardMarkup(
+                            new List<InlineKeyboardButton[]>()
+                              {
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/clcgems80"),
+                                    InlineKeyboardButton.WithCallbackData("500 гемов","buy/clcgems500"),
+                                    InlineKeyboardButton.WithCallbackData("1200 гемов","buy/clcgems1200"),
+                                 },
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("2500 гемов","buy/clcgems2500"),
+                                    InlineKeyboardButton.WithCallbackData("6500 гемов","buy/clcgems6500"),
+                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clgems14000"),
+                                 },
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Золотой пропуск","buy/clcgoldpass"),
+                                     InlineKeyboardButton.WithCallbackData("Алмазный пропуск","buy/clcpass"),
+
+                                 },
+                                   new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Назад","main/items"),
+                                 },
+                             });
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.BrawlPict, caption: "Товары доступные для Clash Royale", replyMarkup: inlineKeyboard);
+                        return;
+                    }
+            }
             
         }
     }

@@ -54,7 +54,8 @@ namespace TelegramBot.Owner
         public static async Task ShowIncomingTasks(ChatId chat,ITelegramBotClient _botClient,TelegramAPI.TelegramBot _Bot)
         {
             var purchases = _Bot.Context.Purchases.Where(v => v.State == 0).ToList();
-            for(int i = 0;i < purchases.Count;i++) { 
+            if (purchases.Count == 0) { await _botClient.SendTextMessageAsync(chat, "Увы,но пока входящих заказов не поступало!"); return; }
+            for (int i = 0;i < purchases.Count;i++) { 
                 var purch = purchases[i];   
                 InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
                          new List<InlineKeyboardButton[]>()
@@ -105,6 +106,7 @@ namespace TelegramBot.Owner
         public static async Task ShowActiveTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
         {
             var purchases = _Bot.Context.Purchases.Where(v => v.State == 1).ToList();
+            if(purchases.Count == 0) { await _botClient.SendTextMessageAsync(chat,"Нет активных заказов! Работай лучше!"); return; }
             for(int i = 0;i <  purchases.Count;i++) 
             {
                 var purch = purchases[i];
@@ -155,7 +157,6 @@ namespace TelegramBot.Owner
             var purchases = _Bot.Context.Purchases.Where(v => v.State == 2).ToList();
             foreach (var item in purchases)
             {
-
                 await _botClient.SendTextMessageAsync(chat, $"{item.ID} {item.GetStringState()}\n\r{item.CustomerName}\r\n{item.Data}\r\n{item.Goods}\r\n{item.Date}");
             }
         }

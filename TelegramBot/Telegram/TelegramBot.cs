@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Xsl;
 using Telegram.Bot;
@@ -17,8 +18,9 @@ namespace TelegramBot.TelegramAPI
     public enum ChatState : ushort
     {
         Standard = 0,
-        GetData = 1,
-        OwnerChat = 2,
+        GetEmail = 1,
+        GetCode = 2,
+        GetDoc = 3,
     }
     public class TelegramBot
     {
@@ -85,49 +87,102 @@ namespace TelegramBot.TelegramAPI
        async Task UpdateHandler(ITelegramBotClient botClient,Update update,CancellationToken cancelTok)
         {
 
-           
-           
             try
-            { 
+            {
+
                 switch (update.Type)
                 {
                     case UpdateType.Message:
-                    {
-                       if (update.Message.Chat.Id == GroupId) return;
-     
-                       Console.WriteLine(update.Message.Chat.Id);
-                        
-                        var updateMessage = update.Message.Text;
-                        var chat = update.Message.Chat;
+                        {
+                            if (update.Message.Chat.Id == GroupId) return;
 
-                        if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
-                        if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
-                            //  Console.WriteLine($"{update.Message.Photo[0].FileId}");
-                            //       return;
+                            Console.WriteLine(update.Message.Chat.Id);
 
-                            if (ChatStates[update.Message.Chat] == ChatState.GetData)
+                            var updateMessage = update.Message.Text;
+                            var chat = update.Message.Chat;
+
+                            if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
+                            if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
+                            //Console.WriteLine($"{update.Message.Photo[0].FileId}");
+                            //      return;
+                            switch (ChatStates[chat])
                             {
-                                Console.WriteLine("t");
-                                var message = update.Message.Text;
-                                var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
-                                var state = purch.State;
-                                await Context.SaveChangesAsync();
-                                if (purch.State == 0)
-                                {
-                                    purch.Data +="\r\nEmail: " + message;
-                                    await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
-                                    await Owner.OwnerAPI.NotifyOnwers(_botClient, "Едрить колитить - новый заказ,или обнова на прошлый");
-                                }
-                                if (purch.State == 1)
-                                {
-                                    purch.Data += "\r\nCode: " + "`" + message + "`"; 
-                                    await Owner.OwnerAPI.NotifyOnwers(_botClient, "Пришел код к активному заказу");
-                                }
-                                ChatStates[chat] = ChatState.Standard;
-                                await SetRoute("main", chat);
-                               
-                                return;
+                                case ChatState.GetEmail:
+                                    {
+                                        Console.WriteLine("Getting email");
+                                        var message = update.Message.Text;
+                                        var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
+
+
+
+                                        if (!Utils.IsValidEmail(message))
+                                        {
+                                            await _botClient.SendTextMessageAsync(chat, "⛔️Неверный формат почты!\r\nПопробуйте ввести еще раз");
+                                        }
+                                        else
+                                        {
+                                            var inlineKeyboard = new InlineKeyboardMarkup(
+                                                  new List<InlineKeyboardButton[]>()
+                                                  {
+                                                 new InlineKeyboardButton[]
+                                                 {
+                                                   InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
+                                                 },
+                                             });
+
+                                            purch.Data += "\r\nEmail: " + message;
+                                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
+                                            await Owner.OwnerAPI.NotifyOnwers(_botClient, "Новый заказ!Прислали почту!", markup: inlineKeyboard);
+
+
+                                            ChatStates[chat] = ChatState.Standard;
+                                        }
+                                        return;
+                                    }
+                                case ChatState.GetCode:
+                                    {
+                                        var message = update.Message.Text;
+                                        var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
+                                        purch.Data += "\r\nCode: " + "`" + message + "`";
+                                        var inlineKeyboard = new InlineKeyboardMarkup(
+                                                  new List<InlineKeyboardButton[]>()
+                                                  {
+                                                 new InlineKeyboardButton[]
+                                                 {
+                                                   InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
+                                                 },
+                                             });
+                                        await Owner.OwnerAPI.NotifyOnwers(_botClient, "Пришел код к заказу", markup: inlineKeyboard);
+                                        ChatStates[chat] = ChatState.Standard;
+                                        return;
+                                    }
+                                case ChatState.GetDoc:
+                                    {
+                                        if (update.Message.Photo != null)
+                                        {
+                                            Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]).PictFileID = update.Message.Photo[0].FileId;
+                                            var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
+                                            await Context.SaveChangesAsync();
+                                            ChatStates[update.Message.Chat] = ChatState.Standard;
+                                            var inlineKeyboard = new InlineKeyboardMarkup(
+                                                  new List<InlineKeyboardButton[]>()
+                                                  {
+                                                 new InlineKeyboardButton[]
+                                                 {
+                                                   InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
+                                                 },
+                                             });
+                                            await Owner.OwnerAPI.NotifyOnwers(_botClient, "Получено подтверждение заказа", markup: inlineKeyboard);
+                                            await SetRoute("main", chat);
+                                        }
+                                        else
+                                        {
+                                            _botClient.SendTextMessageAsync(chat, "Пожалуйста,скиньте подтверждение в виде скриншота");
+                                        }
+                                        return;
+                                    }
                             }
+                            await Context.SaveChangesAsync();
 
                             if (updateMessage == "Входящие заказы")
                             {
@@ -140,7 +195,7 @@ namespace TelegramBot.TelegramAPI
                             {
                                 if (await Owner.OwnerAPI.IsOwner(chat))
                                 {
-                                    await Owner.OwnerAPI.ShowActiveTasks(chat, _botClient,this);
+                                    await Owner.OwnerAPI.ShowActiveTasks(chat, _botClient, this);
                                 }
                             }
                             if (updateMessage == "Завершенные заказы")
@@ -150,19 +205,19 @@ namespace TelegramBot.TelegramAPI
                                     await Owner.OwnerAPI.ShowFinishedTasks(chat, _botClient, this);
                                 }
                             }
-                           
-                        if (updateMessage == "/start")
-                        {
-                            await SetRoute("hello",chat);
-                        }
-                        else if (updateMessage == "На главную страницу")
-                        {
-                           await SetRoute("main", chat);
-       
-                        }
+
+                            if (updateMessage == "/start")
+                            {
+                                await SetRoute("checkSub", chat);
+                            }
+                            else if (updateMessage == "На главную страницу")
+                            {
+                                await SetRoute("main", chat);
+
+                            }
 
                             else if (updateMessage == "/admin")
-                         {
+                            {
                                 if (await Owner.OwnerAPI.IsOwner(chat))
                                 {
                                     await Owner.OwnerAPI.OwnerMenu(_botClient, chat);
@@ -171,60 +226,60 @@ namespace TelegramBot.TelegramAPI
                                 {
                                     Console.WriteLine("You're not an owner!");
                                 }
-                         }
-                           
-                        return;
-                    }
-                    case UpdateType.CallbackQuery:
-                    {
+                            }
 
-                      if (update.CallbackQuery.Message.Chat.Id == GroupId) return;
-                        var callbackQuery = update.CallbackQuery;
-                      var chat = update.CallbackQuery.Message.Chat;
-                       if (!ChatStates.ContainsKey(chat)) ChatStates.Add(chat, ChatState.Standard);
-                       if (ChatStates[chat] != ChatState.Standard) {
-                            if(callbackQuery.Data == "main")
-                            { 
-                               ChatStates[chat] = ChatState.Standard;
-                            }
-                            else if (callbackQuery.Data[0..4] == "emer")
-                             {
-                                    ChatStates[chat] = ChatState.Standard;
-                             }
-                            else if (callbackQuery.Data == "main/new")
-                            {
-                               await Owner.OwnerAPI.NotifyOnwers(_botClient, "Ебать,у нас новый заказ нахуй!");
-                               await SetRoute("main", chat);
-                                    ChatStates[chat] = ChatState.Standard;
-                                await ClearCart(chat, showMessage: false);
-                                    return;
-                            }
-                           else return;
+                            return;
                         }
-                            
-                        
+                    case UpdateType.CallbackQuery:
+                        {
+
+                            if (update.CallbackQuery.Message.Chat.Id == GroupId) return;
+                            var callbackQuery = update.CallbackQuery;
+                            var chat = update.CallbackQuery.Message.Chat;
+                            if (!ChatStates.ContainsKey(chat)) ChatStates.Add(chat, ChatState.Standard);
+                            if (ChatStates[chat] != ChatState.Standard)
+                            {
+                                if (callbackQuery.Data == "main")
+                                {
+                                    ChatStates[chat] = ChatState.Standard;
+                                }
+                                else if (callbackQuery.Data[0..4] == "emer")
+                                {
+                                    ChatStates[chat] = ChatState.Standard;
+                                }
+                                else if (callbackQuery.Data == "main/new")
+                                {
+                                    await Owner.OwnerAPI.NotifyOnwers(_botClient, "Ебать,у нас новый заказ нахуй!");
+                                    await SetRoute("main", chat);
+                                    ChatStates[chat] = ChatState.Standard;
+                                    await ClearCart(chat, showMessage: false);
+                                    return;
+                                }
+                                else return;
+                            }
+
+
 
                             if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
-                       Console.WriteLine(callbackQuery.Data);
-                       await botClient.AnswerCallbackQueryAsync(callbackQuery.Id,"Секунду");
-                        
-                      
-                       foreach(var message in MessagesToDelete[chat])
-                       {
-                           await _botClient.DeleteMessageAsync(chat, message.MessageId); 
-                       }        
-                        MessagesToDelete[chat] = new List<Message>();
+                            Console.WriteLine(callbackQuery.Data);
+                            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, "Секунду");
 
-                        await _botClient.DeleteMessageAsync(chat, callbackQuery.Message.MessageId);
 
-                        await SetRoute(callbackQuery.Data, chat);
-                        return;
-                    }
+                            foreach (var message in MessagesToDelete[chat])
+                            {
+                                await _botClient.DeleteMessageAsync(chat, message.MessageId);
+                            }
+                            MessagesToDelete[chat] = new List<Message>();
+
+                            await _botClient.DeleteMessageAsync(chat, callbackQuery.Message.MessageId);
+
+                            await SetRoute(callbackQuery.Data, chat);
+                            return;
+                        }
                 }
-            }
-            catch (Exception e)
+            }catch(Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.ToString());
             }
        }
 

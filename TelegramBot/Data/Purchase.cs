@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 
 namespace TelegramBot.Data
 {
@@ -17,16 +19,40 @@ namespace TelegramBot.Data
         public string Date { get; set; } = DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString();
         public ushort State { get; set; } = 0;  //0 - Should be done, 1 - done
         public string Data { get; set; } = string.Empty;
-        public Purchase(int ID,decimal Cost,long? CustomerID, string? customerName, List<string> Goods, string Date, ushort State, string data)
+
+        public InputFile Pict { get; set; } = null;
+        private string PictFileID { get; set; } 
+
+        public Purchase(PurchaseModel dataModel)
         {
-            this.ID = ID;
-            this.Cost = Cost;
-            this.Goods = Goods;
-            this.Date = Date;
-            this.State = State;
-            this.CustomerID = CustomerID == null ? -1 : CustomerID;
-            CustomerName = customerName == null ? "No name" : customerName;
-            this.Data = data;
+            ID = dataModel.ID;
+            Cost = dataModel.Cost;
+            CustomerID = dataModel.CustomerID;
+            CustomerName = dataModel.CustomerName;
+            Goods = JsonSerializer.Deserialize<List<string>>(dataModel.JsonGoods);
+            Date = dataModel.Date;
+            State = dataModel.State;
+            Data = dataModel.Data;
+            PictFileID = dataModel.PictFileID;
+            if(dataModel.PictFileID != null)Pict = InputFile.FromFileId(dataModel.PictFileID);
+        }
+        public Purchase(int iD, decimal cost, long? customerID, string customerName, List<string> goods, string date, ushort state, string data, InputFile pict)
+        {
+            ID = iD;
+            Cost = cost;
+            CustomerID = customerID;
+            CustomerName = customerName;
+            Goods = goods;
+            Date = date;
+            State = state;
+            Data = data;
+            Pict = pict;
+
+        }
+
+        public PurchaseModel ToDataModel()
+        {
+            return new PurchaseModel(ID, Cost, CustomerID, CustomerName, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
         }
 
         public List<string> GetCategories()

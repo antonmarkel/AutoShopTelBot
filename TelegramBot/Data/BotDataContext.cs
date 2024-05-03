@@ -9,7 +9,7 @@ namespace TelegramBot.Data
 {
     public class BotDataContext : DbContext
     {
-        public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<PurchaseModel> Purchases { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

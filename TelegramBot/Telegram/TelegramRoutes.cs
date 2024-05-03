@@ -30,7 +30,8 @@ namespace TelegramBot.TelegramAPI
         public static async Task GetRenderByRoute(string route,ITelegramBotClient _botClient,ChatId chat)
         {
             InlineKeyboardMarkup inlineKeyboard = null;
-            if (route[0..3] == "buy")
+            var pref = route[0..4];
+            if (pref[0..3] == "buy")
             {
                 var good = route[4..];
                 Console.WriteLine(good);
@@ -41,7 +42,7 @@ namespace TelegramBot.TelegramAPI
                 }
                 return;
             }
-            else if (route[0..4] == "cart")
+            else if (pref == "cart")
             {
                 var good = route[5..];
                 Console.WriteLine(good);
@@ -66,7 +67,7 @@ namespace TelegramBot.TelegramAPI
                 }
                 return;
             }
-            else if (route[0..4] == "warn")
+            else if (pref == "warn")
             {
                 //▶️
                 var data = route[5..].Split('|');
@@ -89,14 +90,14 @@ namespace TelegramBot.TelegramAPI
                             });
 
                 await _botClient.SendTextMessageAsync(cChat, $"Заказ {ID}.Пожалуйста, введите код присланый вам на email.Если код не пришел в течение 5 минут,нажмите \"Код не пришел\"",replyMarkup:inlineKeyboard);
-                _Bot.ChatStates[chat] = ChatState.GetData;
+                _Bot.ChatStates[chat] = ChatState.GetCode;
                 var item = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);
                 item.Data += "\r\n";
                 item.State = 1;
                 await _Bot.Context.SaveChangesAsync();
                 return;
             }
-            else if (route[0..4] == "done")
+            else if (pref == "done")
             {
                 //▶️
                 var data = route[5..].Split('|');
@@ -109,9 +110,9 @@ namespace TelegramBot.TelegramAPI
                 await _Bot.Context.SaveChangesAsync();
                 return;
             }
-            else if (route[0..4] == "remo")
+            else if (pref == "remo")
             {
-                var id = int.Parse(route[7..]);
+                var id = int.Parse(route[5..]);
                 var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == id);
                 if(purch == null) { await _botClient.SendTextMessageAsync(chat, "Заказ не найден"); }
                 else
@@ -133,7 +134,7 @@ namespace TelegramBot.TelegramAPI
                 }
 
             }
-            else if (route[0..4] == "emer")
+            else if (pref == "emer")
             {
                 var data = route[5..].Split('|');
                 var custID = long.Parse(data[0]);
@@ -145,28 +146,50 @@ namespace TelegramBot.TelegramAPI
                 purch.Data += "\r\n---- новая инфа ---- \r\n";
                 await _Bot.Context.SaveChangesAsync();
                 var ch = new ChatId(custID);
-                _Bot.ChatStates[ch] = ChatState.GetData;
-               await _botClient.SendTextMessageAsync(ch, $"Ваш заказ {purchID} задержан.\r\nПричина:Некорректный email\r\n.Пожалуйста,введи еще раз и нажмите \"Отправил\" \r\nЕсли вы считайте,что это произошло по ошибке,обратитесь в поддержку!");
-
-            }
-            else if (route[0..4] == "empa")
-            {
-                var data = route[5..].Split('|');
-                var custID = long.Parse(data[0]);
-                var purchID = int.Parse(data[1]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
-                await _botClient.SendTextMessageAsync(new ChatId(custID), $"Ваш заказ {purchID} задержан.\r\nПричина:Оплата не найдена!Если вы не оплатили - оплатите, следуя инструциям.\r\nЕсли вы считайте,что произошла ошибке,обратитесь в поддержку!");
-            }
-            else if (route[0..4] == "emco")
-            {
-                var data = route[5..].Split('|');
-                var custID = long.Parse(data[0]);
-                var purchID = int.Parse(data[1]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
                 
+
+                inlineKeyboard = new InlineKeyboardMarkup(
+                          new List<InlineKeyboardButton[]>()
+                          {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Главное меню",$"main"),
+                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster_brawl")
+                                 }
+
+                          });
+                await _botClient.SendTextMessageAsync(ch, $"⛔️Ваш заказ {purchID} задержан.\r\nПричина:Некорректный email.\r\nПожалуйста,введи еще раз.\r\nЕсли вы считайте,что это произошло по ошибке,обратитесь в поддержку!",replyMarkup:inlineKeyboard);
+                _Bot.ChatStates[ch] = ChatState.GetEmail;
+            }
+            else if (pref == "empa")
+            {
+                var data = route[5..].Split('|');
+                var custID = long.Parse(data[0]);
+                var purchID = int.Parse(data[1]);
+                inlineKeyboard = new InlineKeyboardMarkup(
+                          new List<InlineKeyboardButton[]>()
+                          {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Главное меню",$"main"),
+                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster_brawl")
+                                 }
+
+                          });
+
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                await _botClient.SendTextMessageAsync(new ChatId(custID), $"⛔️Ваш заказ {purchID} задержан.\r\nПричина:Оплата не найдена!\r\nЕсли вы не оплатили - оплатите, следуя инструциям.\r\nЕсли вы считайте,что произошла ошибке,обратитесь в поддержку!",replyMarkup: inlineKeyboard);
+            }
+            else if (pref == "emco")
+            {
+                var data = route[5..].Split('|');
+                var custID = long.Parse(data[0]);
+                var purchID = int.Parse(data[1]);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                _Bot.ChatStates[chat] = ChatState.GetCode;
                 await _botClient.SendTextMessageAsync(new ChatId(custID), $"Пришлите код, высланный вам на email");
             }
-            else if (route[0..4] == "dele")
+            else if (pref == "dele")
             {
                 var itemIdent = route[5..];
                 
@@ -174,7 +197,48 @@ namespace TelegramBot.TelegramAPI
                 _Bot.SetRoute("main/cart/change", chat);
                
             }
+            else if (pref == "docu")
+            {
+                var data = route[5..].Split('|');
+                long userId = long.Parse(data[0]);
+                int ID = int.Parse(data[1]);
+                long ownerID = long.Parse(data[2]);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);
 
+                ChatId cChat = new ChatId(userId);
+                inlineKeyboard = new InlineKeyboardMarkup(
+                           new List<InlineKeyboardButton[]>()
+                           {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Отменить заказ",$"remo|{purch.ID}"),
+                                 }
+
+                           });
+                _botClient.SendTextMessageAsync(cChat, $"Заказ: {purch.ID}\r\n🔔 Мы не нашли оплаты с вашим ID, поэтому менеджер запросил у вас доказательства перевода денежных средств (чек/скриншот/история) \r\n\r\n📃 Пришлите пожалуйста скриншот/файл с доказательством,либо нажмите на кнопку \"Отменить заказ\"",replyMarkup:inlineKeyboard) ;
+                _Bot.CurrentPurchase[cChat] = ID;
+                _Bot.ChatStates[cChat] = ChatState.GetDoc;
+            }
+            else if(pref == "undo")
+            {
+                int purchID = int.Parse(route[5..].Split('|')[0]);
+                _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID).State = 1;
+                await _Bot.Context.SaveChangesAsync();
+            }
+            else if(pref == "show")
+            {
+                int purchID = int.Parse(route[5..].Split('|')[0]);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                if(purch == null)
+                {
+                    await _botClient.SendTextMessageAsync(chat, "Заказ не найден!");
+                }
+                else
+                {
+                    Owner.OwnerAPI.ShowTask(chat, _botClient, _Bot, new Purchase(purch));
+                }
+              
+            }
 
             switch (route)
             {
@@ -189,7 +253,7 @@ namespace TelegramBot.TelegramAPI
                                  },
                             });
                         await _botClient.SendTextMessageAsync(chat, "Вас приветствует бот,который очень хочет сделать ваш процесс покупок легким и быстрым!\r\n" +
-                            "Перед началом подпишитесь пожалуйста на канал магазина @LanDonate", replyMarkup: inlineKeyboard);
+                            "⚠️ Чтобы использовать бота, необходимо быть подписанным на наш магазин - @LanDonate", replyMarkup: inlineKeyboard);
 
                         return;
                     }
@@ -203,16 +267,69 @@ namespace TelegramBot.TelegramAPI
                         Console.WriteLine(chatMember.Status.ToString() );
                         if (chatMember.Status == ChatMemberStatus.Member || chatMember.Status == ChatMemberStatus.Administrator || chatMember.Status == ChatMemberStatus.Creator)
                         {
-                            await _botClient.SendTextMessageAsync(chat, "Спасибо за подписку!\r\n Теперь можете пользоваться ботом");
+
+                           // await _botClient.SendTextMessageAsync(chat, "Спасибо за подписку!\r\n Теперь можете пользоваться ботом");
                             await _Bot.SetRoute("main", chat);
                         }
                         else
                         {
-                            _botClient.SendTextMessageAsync(chat, "Подпишитесь на группу перед началом!");
+                            
                             await _Bot.SetRoute("hello", chat);
                         }
                         return;
                     }
+
+                case "main/info":
+                    {
+                        inlineKeyboard = new InlineKeyboardMarkup(
+                            new List<InlineKeyboardButton[]>()
+                            {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Правила","main/items"),
+                                      InlineKeyboardButton.WithUrl("Отзывы","https://t.me/LancasterReviews"),
+                                      InlineKeyboardButton.WithCallbackData("FAQ","main"),
+                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster_brawl")
+                                 },
+                                  new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithUrl("Магазин","https://t.me/LanDonate"),
+                                      InlineKeyboardButton.WithUrl("Отзывы","https://t.me/LancasterReviews"),
+                                       InlineKeyboardButton.WithUrl("Чат","https://t.me/LancasterChat"),
+                                 },
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main"),
+                                 },
+
+                            });
+
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.MainPict, caption: $"Здесь вы можете ознакомится с нашим магазином чуточку ближе", replyMarkup: inlineKeyboard);
+                        return;
+                    }
+                case "main/profile":
+                    {
+
+                        inlineKeyboard = new InlineKeyboardMarkup(
+                              new List<InlineKeyboardButton[]>()
+                              {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Каталог","main/items"),
+                                    InlineKeyboardButton.WithCallbackData("Корзина","main/cart"),
+                                     InlineKeyboardButton.WithCallbackData("Мои заказы","main/history"),
+                                 },
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main"),
+
+                                 },
+                              });
+
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.MainPict, caption: $"👤ID пользователя: {chat.Identifier}\r\n💰Баланс: 0Р\r\n🛒Заказов всего: {_Bot.Context.Purchases.Where(v => v.CustomerID == chat.Identifier).ToList().Count}", replyMarkup: inlineKeyboard);
+                        return;
+                    }
+
                 case "main":
                     {
               
@@ -222,23 +339,15 @@ namespace TelegramBot.TelegramAPI
                              {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Выбор игры","main/items"),
+                                    InlineKeyboardButton.WithCallbackData("Каталог","main/items"),
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Корзина","main/cart"),
+                                    InlineKeyboardButton.WithCallbackData("Мой профиль","main/profile"),
+                                    InlineKeyboardButton.WithCallbackData("Информация","main/info"),
                                  },
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Мои заказы","main/history"),
-                                 },
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithUrl("Отзывы","https://t.me/LanReviews"),
-                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster696")
-                                 },
-
-                             });
+                               
+                             });    
 
                         await _botClient.SendPhotoAsync(chat,Resources.Resources.MainPict, caption: "Приветствуем вас! Здесь вы сможете ознакомиться с товарами", replyMarkup: inlineKeyboard);
                         return;
@@ -263,6 +372,7 @@ namespace TelegramBot.TelegramAPI
 
                 case "main/paid":
                     {
+                        
                         decimal sum = 0;
                         List<string> _goods = new List<string>();
                         if (_Bot.Cart[chat].Count > 0)
@@ -273,21 +383,21 @@ namespace TelegramBot.TelegramAPI
                                 sum += item.Price;
                             }
                         }
-
+                       
                         int id = (new Random()).Next();
                         while (_Bot.Context.Purchases.FirstOrDefault(v => v.ID == id) != null) id = (new Random()).Next();
                         TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
                         DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
 
-                        await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {moscowTime.ToShortDateString()} | {moscowTime.ToShortTimeString()}(МСК)\r\n\r\n🔔 Введите вашу почту Supercell ID \r\n⚠️ Формат: email@gmail.com",parseMode:ParseMode.Html); 
-                      
-                        Purchase purchase = new Purchase(id,sum, chat.Identifier, chat.Username, _goods, $"{ moscowTime.ToShortDateString() } | { moscowTime.ToShortTimeString()}", 0,string.Empty);
-                        _Bot.ChatStates[chat] = ChatState.GetData;
+                        await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {moscowTime.ToShortDateString()} | {moscowTime.ToShortTimeString()}(МСК)\r\n\r\n🔔 Введите вашу почту Supercell ID \r\n⚠️ Формат: email@gmail.com",parseMode:ParseMode.Html);
+                        
+                        Purchase purchase = new Purchase(id,sum, chat.Identifier, chat.Username, _goods, $"{ moscowTime.ToShortDateString() } | { moscowTime.ToShortTimeString()}", 0,string.Empty,null);
+                        _Bot.ChatStates[chat] = ChatState.GetEmail;
                     
-                        await _Bot.Context.Purchases.AddAsync(purchase);
+                        await _Bot.Context.Purchases.AddAsync(purchase.ToDataModel());
                         await _Bot.Context.SaveChangesAsync();
                         _Bot.CurrentPurchase[chat] = id;
-                       
+                        _Bot.Cart[chat].Clear();
                         //await _Bot.SetRoute("main", chat);
                         return;
                     }
@@ -323,25 +433,37 @@ namespace TelegramBot.TelegramAPI
                           });
                         int id = (new Random()).Next();
                         while (_Bot.Context.Purchases.FirstOrDefault(v => v.ID == id) != null) id = (new Random()).Next();
-                        Purchase purchase = new Purchase(id, sum, chat.Identifier, chat.Username, _goods, DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString(), 0, string.Empty);
+                        Purchase purchase = new Purchase(id, sum, chat.Identifier, chat.Username, _goods, DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString(), 0, string.Empty,null);
                         if(purchase.GetCategories().Count > 1)
                         {
-                            await _botClient.SendTextMessageAsync(chat, "Извините, на данный момент обработка заказов содержащих товары для разных игр не осуществляется.Приносим свои извинения.Пожалуйста,оставьте в корзине товары только для одной игры. Это можно сделать нажав кнопку \"Изменить\" в меню корзины");
+                           var backKeyboard = new InlineKeyboardMarkup(
+                          new List<InlineKeyboardButton[]>()
+                           {
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("В корзину","main/cart"),
+                                 },
+
+                          });
+                            await _botClient.SendTextMessageAsync(chat, "Извините, на данный момент обработка заказов содержащих товары для разных игр не осуществляется.Приносим свои извинения.Пожалуйста,оставьте в корзине товары только для одной игры. Это можно сделать нажав кнопку \"Изменить\" в меню корзины",replyMarkup:backKeyboard);
                         }
                         else
-                        {
-                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n💴 Процесс: Оплата\r\n🏦 Для оплаты Вы должны перевести {sum}Р по любому из данных реквизитов и <strong>\r\n\r\n!!!написать {id} в сообщениях к оплате!!! \r\n\r\n</strong>. После оплаты нажмите \"Я оплатил\".\r\n\r\n🎫 Реквизиты:\r\n\r\nТинькофф • +79939245527\r\nТинькофф • 2200700850594697\r\nСбер • 5336690284035310\r\n\r\n⚠️ Чтобы вы не потеряли вашу оплату, зафиксируйте данный перевод с номером заказа на скриншот/видео. \r\n\r\n🙋‍♂️ Если возникнут вопросы - обратитесь в поддержку: @firov1", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
+                        {//.Replace("-", "\\-").Replace(".", "\\.").Replace("+", "\\+")
+                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 ID заказа: {id}\r\n💴 Статус: Оплата\r\n💰 Цена: {sum}₽\r\n🏦 Для оплаты заказа нужно перевести {sum}₽ по любому из данных реквизитов и в комментариях к оплате написать ID вашего заказа -  [<code>{id}</code>]\r\nПосле оплаты нажмите на \"Я оплатил\".\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф • <code>+79939245527</code>\r\n┃ Тинькофф • <code>2200700850594697</code>\r\n┃ СберБанк • <code>5336690284035310</code>\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ – заказ будет отменён менеджером.\r\n\r\n🙋‍♂️ Если возникнут вопросы с оплатой - обратитесь в поддержку: @lancaster_brawl", replyMarkup: cancelPayKeyboard,parseMode:ParseMode.Html);
+                            //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 ID заказа: {id}\r\n💴 Статус: Оплата\r\n💰 Цена: {sum}₽\r\n🏦 Для оплаты заказа нужно перевести {sum}₽ по любому из данных реквизитов и в комментариях к оплате написать ID вашего заказа \\-  [`793925754`]\r\nПосле оплаты нажмите на \"Я оплатил\"\\.\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф • \\+79939245527\r\n┃ Тинькофф • 2200700850594697\r\n┃ СберБанк • 5336690284035310\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ \\– заказ будет отменён менеджером\\.\r\n\r\n🙋‍♂️ Если возникнут вопросы с оплатой \\- обратитесь в поддержку: @lancaster_brawl", replyMarkup: inlineKeyboard, parseMode: ParseMode.MarkdownV2);
+                            //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n💴 Процесс: Оплата\r\n🏦 Для оплаты Вы должны перевести {sum}Р по любому из данных реквизитов и <strong>\r\n\r\n!!!написать {id} в сообщениях к оплате!!! \r\n\r\n</strong>. После оплаты нажмите \"Я оплатил\".\r\n\r\n🎫 Реквизиты:\r\n\r\nТинькофф • +79939245527\r\nТинькофф • 2200700850594697\r\nСбер • 5336690284035310\r\n\r\n⚠️ Чтобы вы не потеряли вашу оплату, зафиксируйте данный перевод с номером заказа на скриншот/видео. \r\n\r\n🙋‍♂️ Если возникнут вопросы - обратитесь в поддержку: @firov1", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                         }
                             
                         return;
                     }
                 case "main/history":
                     {
-                        var purches = _Bot.Context.Purchases.Where(v => v.CustomerID == chat.Identifier).ToList();
+                        var purches = _Bot.Context.Purchases.Where(v => v.CustomerID == chat.Identifier).Select(v => new Purchase(v)).ToList();
 
                         if (purches.Count == 0)
                         {
-                            await _botClient.SendTextMessageAsync(chat, "Вы еще не совершали покупок", replyMarkup: inlineKeyboard);
+                            await _botClient.SendTextMessageAsync(chat, "На данный вы ещё не совершали покупок. Но вы всегда можете это исправить 😎", replyMarkup: inlineKeyboard);
                         }
                         else
                         {
@@ -364,12 +486,26 @@ namespace TelegramBot.TelegramAPI
                                                  InlineKeyboardButton.WithCallbackData("Отменить заказ",$"remove|{ph.ID}"),
                                             },
                                      });
-                                    await _botClient.SendTextMessageAsync(chat, $"{ph.Date} {ph.GetStringState()} \r\n {goodsString}", replyMarkup: cancelPayKeyboard);
+                                    string state = string.Empty;
+                                    switch (ph.State)
+                                    {
+                                        case 0:
+                                            state = "Ожидание продавца";
+                                            break;
+                                        case 1:
+                                            state = "Ожидание продавца";
+                                            break;
+                                        case 2:
+                                            state = "Выполнен";
+                                            break;
+                                    }
+                                    
+                                    await _botClient.SendTextMessageAsync(chat, $"{ph.Date}\r\nСостояние: {state}{ph.GetStringState()} \r\n {goodsString}", replyMarkup: cancelPayKeyboard);
                                 }
 
                                 else
                                 {
-                                    await _botClient.SendTextMessageAsync(chat, $"{ph.Date} {ph.GetStringState()} \r\n {goodsString}");
+                                    await _botClient.SendTextMessageAsync(chat, $"{ph.Date} {ph.GetStringState()} \r\n{goodsString}");
                                 }
                             }
                           var exitKeyboard = new InlineKeyboardMarkup(
@@ -420,7 +556,7 @@ namespace TelegramBot.TelegramAPI
                                   new InlineKeyboardButton[]
                                  {
                                       InlineKeyboardButton.WithCallbackData("Очистить корзину","main/cart/clear"),
-                                    InlineKeyboardButton.WithCallbackData("Назад","main"),
+                                    InlineKeyboardButton.WithCallbackData("Назад","main/items"),
                                    
                                  },
 
@@ -436,7 +572,7 @@ namespace TelegramBot.TelegramAPI
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Назад","main"),
+                                    InlineKeyboardButton.WithCallbackData("Назад","main/items"),
                                  },
                                
                            });
@@ -487,7 +623,7 @@ namespace TelegramBot.TelegramAPI
                                  new InlineKeyboardButton[]
                                  {
 
-                                    InlineKeyboardButton.WithCallbackData("Назад","main"),
+                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main"),
                                  },
 
                              });
@@ -572,7 +708,7 @@ namespace TelegramBot.TelegramAPI
                                     InlineKeyboardButton.WithCallbackData("Назад","main/items"),
                                  },
                              });
-                        await _botClient.SendPhotoAsync(chat, Resources.Resources.BrawlPict, caption: "Товары доступные для Clash Royale", replyMarkup: inlineKeyboard);
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.ClashPict, caption: "Товары доступные для Clash Royale", replyMarkup: inlineKeyboard);
                         return;
                     }
                 case "main/items/clans":
@@ -592,13 +728,13 @@ namespace TelegramBot.TelegramAPI
                                  {
                                     InlineKeyboardButton.WithCallbackData("2500 гемов","buy/clcgems2500"),
                                     InlineKeyboardButton.WithCallbackData("6500 гемов","buy/clcgems6500"),
-                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clgems14000"),
+                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clcgems14000"),
                                  },
 
                                  new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Золотой пропуск","buy/clcgoldpass"),
-                                     InlineKeyboardButton.WithCallbackData("Алмазный пропуск","buy/clcpass"),
+                                     InlineKeyboardButton.WithCallbackData("Пропуск события","buy/clcpass"),
 
                                  },
                                    new InlineKeyboardButton[]
@@ -606,7 +742,7 @@ namespace TelegramBot.TelegramAPI
                                     InlineKeyboardButton.WithCallbackData("Назад","main/items"),
                                  },
                              });
-                        await _botClient.SendPhotoAsync(chat, Resources.Resources.BrawlPict, caption: "Товары доступные для Clash Royale", replyMarkup: inlineKeyboard);
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.ClansPict, caption: "Товары доступные для Clash of Clans", replyMarkup: inlineKeyboard);
                         return;
                     }
             }

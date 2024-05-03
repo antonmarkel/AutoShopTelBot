@@ -31,18 +31,18 @@ namespace TelegramBot
               new Item("clgems1200") { Name = "1200 гемов",Category = "Clash Royale", Price = 1200, Picture = Resources.Resources.GemsPict},
                new Item("clgems2500") { Name = "2500 гемов",Category = "Clash Royale", Price = 2100, Picture = Resources.Resources.GemsPict},
                 new Item("clgems6500") { Name = "6500 гемов",Category = "Clash Royale", Price = 5000, Picture = Resources.Resources.GemsPict},
-                 new Item("clgems14000") { Name = "14000 гемов",Category = "Clash Royale", Price = 1000, Picture = Resources.Resources.GemsPict},
+                 new Item("clgems14000") { Name = "14000 гемов",Category = "Clash Royale", Price = 10000, Picture = Resources.Resources.GemsPict},
                   new Item("clgoldpass") { Name = "Золотой пропуск",Category = "Clash Royale", Price = 650, Picture = Resources.Resources.GemsPict},
                    new Item("clironpass") { Name = "Алмазный пропуск",Category = "Clash Royale", Price = 1300, Picture = Resources.Resources.GemsPict},
-
-            new Item("clсgems80") { Name = "80 гемов",Category = "Clash of Clans", Price = 150, Picture = Resources.Resources.GemsPict},
-             new Item("clсgems500") { Name = "500 гемов",Category = "Clash of Clans", Price = 600, Picture = Resources.Resources.GemsPict},
+                   
+            new Item("clsgems80") { Name = "80 гемов",Category = "Clash of Clans", Price = 150, Picture = Resources.Resources.GemsPict},
+             new Item("clcgems500") { Name = "500 гемов",Category = "Clash of Clans", Price = 600, Picture = Resources.Resources.GemsPict},
               new Item("clсgems1200") { Name = "1200 гемов",Category = "Clash of Clans", Price = 1200, Picture = Resources.Resources.GemsPict},
-               new Item("clсgems2500") { Name = "2500 гемов",Category = "Clash of Clans", Price = 2100, Picture = Resources.Resources.GemsPict},
-                new Item("clсgems6500") { Name = "6500 гемов",Category = "Clash Royale", Price = 5000, Picture = Resources.Resources.GemsPict},
-                 new Item("clсgems14000") { Name = "14000 гемов",Category = "Clash of Clans", Price = 1000, Picture = Resources.Resources.GemsPict},
-                  new Item("clсgoldpass") { Name = "Золотой пропуск",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
-                    new Item("clсpass") { Name = "Пропуск события",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
+               new Item("clcgems2500") { Name = "2500 гемов",Category = "Clash of Clans", Price = 2100, Picture = Resources.Resources.GemsPict},
+                new Item("clcgems6500") { Name = "6500 гемов",Category = "Clash Royale", Price = 5000, Picture = Resources.Resources.GemsPict},
+                 new Item("clcgems14000") { Name = "14000 гемов",Category = "Clash of Clans", Price = 10000, Picture = Resources.Resources.GemsPict},
+                  new Item("clcgoldpass") { Name = "Золотой пропуск",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
+                    new Item("clcpass") { Name = "Пропуск события",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
 
     };
 }

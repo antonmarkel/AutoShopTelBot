@@ -9,6 +9,27 @@ namespace TelegramBot
 {
     public class Utils
     {
+        public static bool IsValidCode(string code)
+        {
+            string validSim = "0123456789";
+            if (code.Length != 6) return false;
+            for (int i = 0; i < code.Length; i++)
+            {
+                if (!validSim.Contains(code[i])) return false;
+            }
+            return true;
+        }
+        public static void Log(string message,ConsoleColor color = ConsoleColor.Black) {
+            TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+            DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write($"[{moscowTime.ToShortTimeString()}]");
+            if (color == ConsoleColor.Black) Console.ResetColor();
+            else Console.ForegroundColor = color;
+            Console.WriteLine(message);
+
+        }
+
         public static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))

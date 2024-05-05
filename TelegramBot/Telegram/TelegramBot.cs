@@ -59,7 +59,7 @@ namespace TelegramBot.TelegramAPI
             using var cts = new CancellationTokenSource();
             TelegramRoutes._Bot = this;
             _botClient.StartReceiving(UpdateHandler, ErrorHanlder, _receiverOptions, cts.Token);
-            Console.WriteLine("Bot started");
+            Utils.Log("Bot started", ConsoleColor.DarkGreen);
             await Task.Delay(-1);
         }
 
@@ -96,7 +96,7 @@ namespace TelegramBot.TelegramAPI
                         {
                             if (update.Message.Chat.Id == GroupId) return;
 
-                            Console.WriteLine(update.Message.Chat.Id);
+                            Utils.Log($"Text message {update.Message.Chat.Id}", ConsoleColor.DarkBlue);
 
                             var updateMessage = update.Message.Text;
                             var chat = update.Message.Chat;
@@ -109,7 +109,7 @@ namespace TelegramBot.TelegramAPI
                             {
                                 case ChatState.GetEmail:
                                     {
-                                        Console.WriteLine("Getting email");
+                                        Utils.Log($"Got email from {chat.Id}", ConsoleColor.DarkGreen);
                                         var message = update.Message.Text;
                                         var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
 
@@ -117,7 +117,7 @@ namespace TelegramBot.TelegramAPI
 
                                         if (!Utils.IsValidEmail(message))
                                         {
-                                            await _botClient.SendTextMessageAsync(chat, "⛔️Неверный формат почты!\r\nПопробуйте ввести еще раз");
+                                            await _botClient.SendTextMessageAsync(chat, "⛔️ Вы ввели неверный формат почты:\r\n\r\n⚠️ Формат: example@gmail.com\r\n✅ Пример: vanya228@mail.ru\r\n\r\n👇 Зайдите в раздел Supercell ID в игре, чтобы посмотреть вашу почту на нужном аккаунте и напишите почту повторно:");
                                         }
                                         else
                                         {
@@ -132,6 +132,7 @@ namespace TelegramBot.TelegramAPI
 
                                             purch.Data += "\r\nEmail: " + message;
                                             await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
+                                            await SetRoute("main", chat);
                                             await Owner.OwnerAPI.NotifyOnwers(_botClient, "Новый заказ!Прислали почту!", markup: inlineKeyboard);
 
 
@@ -143,7 +144,12 @@ namespace TelegramBot.TelegramAPI
                                     {
                                         var message = update.Message.Text;
                                         var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
-                                        purch.Data += "\r\nCode: " + "`" + message + "`";
+                                        if (!Utils.IsValidCode(message))
+                                        {
+                                            await _botClient.SendTextMessageAsync(chat, "⛔️ Вы ввели неверный код с почты:\r\n\r\n⚠️ Формат: 123456\r\n✅ Пример: 782861\r\n\r\n👇 Проверьте <u>входящие</u>, <u>спам</u>, <u>промо-акции</u> в своём приложении/сайте и напишите правильный код повторно:", parseMode: ParseMode.Html);
+                                            return;
+                                        }
+                                        purch.Data += "\r\nCode: " + "<code>" + message + "</code>";
                                         var inlineKeyboard = new InlineKeyboardMarkup(
                                                   new List<InlineKeyboardButton[]>()
                                                   {
@@ -222,10 +228,7 @@ namespace TelegramBot.TelegramAPI
                                 {
                                     await Owner.OwnerAPI.OwnerMenu(_botClient, chat);
                                 }
-                                else
-                                {
-                                    Console.WriteLine("You're not an owner!");
-                                }
+                             
                             }
 
                             return;
@@ -261,7 +264,7 @@ namespace TelegramBot.TelegramAPI
 
 
                             if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
-                            Console.WriteLine(callbackQuery.Data);
+                            Utils.Log($" [{chat.Id}] {callbackQuery.Data}");
                             await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, "Секунду");
 
 
@@ -279,7 +282,7 @@ namespace TelegramBot.TelegramAPI
                 }
             }catch(Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Utils.Log(e.Message, ConsoleColor.DarkRed);
             }
        }
 
@@ -290,7 +293,7 @@ namespace TelegramBot.TelegramAPI
                 ApiRequestException apiRequestException => $"Telegram bot API error:\n[{apiRequestException.ErrorCode} {apiRequestException.Message}",
                 _ => error.ToString()
             };
-            Console.WriteLine(ErrorMessage);
+            Utils.Log($"{ErrorMessage}", ConsoleColor.DarkRed);
             return Task.CompletedTask;
         }
     }

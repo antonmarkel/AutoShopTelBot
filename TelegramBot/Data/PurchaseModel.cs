@@ -20,6 +20,10 @@ namespace TelegramBot.Data
         public string Data { get; set; } = string.Empty;
         public string? PictFileID { get; set; } = null;
 
+        public Purchase ToModel()
+        {
+            return new Purchase(this);
+        }
         public PurchaseModel(int ID, decimal Cost, long? CustomerID, string? customerName, string JsonGoods, string Date, ushort State, string data, string PictFileID)
         {
             this.ID = ID;

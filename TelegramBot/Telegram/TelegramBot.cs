@@ -21,6 +21,7 @@ namespace TelegramBot.TelegramAPI
         GetEmail = 1,
         GetCode = 2,
         GetDoc = 3,
+        GetTag = 4,
     }
     public class TelegramBot
     {
@@ -109,7 +110,7 @@ namespace TelegramBot.TelegramAPI
                             {
                                 case ChatState.GetEmail:
                                     {
-                                        Utils.Log($"Got email from {chat.Id}", ConsoleColor.DarkGreen);
+                                        Utils.Log($"Getting email from {chat.Id}", ConsoleColor.DarkGreen);
                                         var message = update.Message.Text;
                                         var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
 
@@ -133,8 +134,39 @@ namespace TelegramBot.TelegramAPI
                                             purch.Data += "\r\nEmail: " + message;
                                             await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
                                             await SetRoute("main", chat);
-                                            await Owner.OwnerAPI.NotifyOnwers(_botClient, "Новый заказ!Прислали почту!", markup: inlineKeyboard);
+                                            await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришла почта.\r\n👤Заказ: {purch.ID}\r\n📩Почта: {message}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽", markup: inlineKeyboard);
 
+
+                                            ChatStates[chat] = ChatState.Standard;
+                                        }
+                                        return;
+                                    }
+                                case ChatState.GetTag:
+                                    {
+                                        Utils.Log($"Getting tag from {chat.Id}", ConsoleColor.DarkGreen);
+                                        var message = update.Message.Text;
+                                        var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
+
+                                        if (!Utils.IsValidTelegramTag(message))
+                                        {
+                                            await _botClient.SendTextMessageAsync(chat, "⛔️ Вы ввели неверный формат тэга:\r\n\r\n⚠️ Формат: @tag\r\n✅ Пример: @Lancaster\r\n\r\n👇 Зайдите в свой профиль Telegram, чтобы посмотреть ваш тэг на нужном аккаунте и напишите его повторно:");
+                                        }
+                                        else
+                                        {
+                                            var inlineKeyboard = new InlineKeyboardMarkup(
+                                                  new List<InlineKeyboardButton[]>()
+                                                  {
+                                                 new InlineKeyboardButton[]
+                                                 {
+                                                   InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
+                                                 },
+                                             });
+
+                                            purch.Data += "\r\nTag: " + message;
+                                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
+                                            await SetRoute("main", chat);
+                                            await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришел тэг для Telegram. Зайди в активные заказы\r\n👤Заказ: {purch.ID}\r\n📩Tэг: {message}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽", markup: inlineKeyboard);
+                                            purch.State = 1;
 
                                             ChatStates[chat] = ChatState.Standard;
                                         }
@@ -149,7 +181,7 @@ namespace TelegramBot.TelegramAPI
                                             await _botClient.SendTextMessageAsync(chat, "⛔️ Вы ввели неверный код с почты:\r\n\r\n⚠️ Формат: 123456\r\n✅ Пример: 782861\r\n\r\n👇 Проверьте <u>входящие</u>, <u>спам</u>, <u>промо-акции</u> в своём приложении/сайте и напишите правильный код повторно:", parseMode: ParseMode.Html);
                                             return;
                                         }
-                                        purch.Data += "\r\nCode: " + "<code>" + message + "</code>";
+                                        purch.Data += "Code: " + "<code>" + message + "</code>";
                                         var inlineKeyboard = new InlineKeyboardMarkup(
                                                   new List<InlineKeyboardButton[]>()
                                                   {
@@ -158,7 +190,7 @@ namespace TelegramBot.TelegramAPI
                                                    InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
                                                  },
                                              });
-                                        await Owner.OwnerAPI.NotifyOnwers(_botClient, "Пришел код к заказу", markup: inlineKeyboard);
+                                        await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришёл код.\r\n👤Заказ:{purch.ID}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽\r\n{purch.Data}", markup: inlineKeyboard,mode:ParseMode.Html);
                                         ChatStates[chat] = ChatState.Standard;
                                         return;
                                     }
@@ -178,7 +210,7 @@ namespace TelegramBot.TelegramAPI
                                                    InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
                                                  },
                                              });
-                                            await Owner.OwnerAPI.NotifyOnwers(_botClient, "Получено подтверждение заказа", markup: inlineKeyboard);
+                                            await Owner.OwnerAPI.NotifyOnwers(_botClient, $"Получено подтверждение оплаты\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽", markup: inlineKeyboard);
                                             await SetRoute("main", chat);
                                         }
                                         else
@@ -252,7 +284,7 @@ namespace TelegramBot.TelegramAPI
                                 }
                                 else if (callbackQuery.Data == "main/new")
                                 {
-                                    await Owner.OwnerAPI.NotifyOnwers(_botClient, "Ебать,у нас новый заказ нахуй!");
+                                    await Owner.OwnerAPI.NotifyOnwers(_botClient, $"Ебать,у нас новый заказ нахуй!");
                                     await SetRoute("main", chat);
                                     ChatStates[chat] = ChatState.Standard;
                                     await ClearCart(chat, showMessage: false);

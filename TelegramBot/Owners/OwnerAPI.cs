@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Data;
 using TelegramBot.TelegramAPI;
@@ -43,7 +44,7 @@ namespace TelegramBot.Owner
             await _botclient.SendTextMessageAsync(chatId,"Привествуем, хозяин!",replyMarkup:replyKeyboard);
         }
 
-        public static async Task NotifyOnwers(ITelegramBotClient _botClient, string message, IReplyMarkup markup = null)
+        public static async Task NotifyOnwers(ITelegramBotClient _botClient, string message, IReplyMarkup markup = null,ParseMode? mode = null)
         {
             foreach (var owner in Owners)
             {
@@ -51,11 +52,11 @@ namespace TelegramBot.Owner
                 ChatId chatOwner = new ChatId(owner);
                 if(markup != null)
                 {
-                    await _botClient.SendTextMessageAsync(chatOwner, message, replyMarkup:markup);
+                    await _botClient.SendTextMessageAsync(chatOwner, message, replyMarkup:markup,parseMode:mode);
                 }
                 else
                 {
-                    await _botClient.SendTextMessageAsync(chatOwner, message);
+                    await _botClient.SendTextMessageAsync(chatOwner, message, parseMode: mode);
                 }
               
             }
@@ -142,6 +143,10 @@ namespace TelegramBot.Owner
                                     InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.ID}")
 
                                  },
+                                 new InlineKeyboardButton[]
+                                 {
+                                     InlineKeyboardButton.WithCallbackData("Запросить тэг для Telegram",$"etag|{purch.CustomerID}|{purch.ID}")
+                                 },
                                   new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.ID}")
@@ -152,7 +157,7 @@ namespace TelegramBot.Owner
                                     InlineKeyboardButton.WithCallbackData("Назад","Main")
                                  },
 
-                         });
+                         }) ; 
             StringBuilder goodsString = new StringBuilder();
             for (int j = 0; j < purch.Goods.Count; j++)
             {

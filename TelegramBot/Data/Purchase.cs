@@ -17,7 +17,7 @@ namespace TelegramBot.Data
         public string CustomerName { get; set; }
         public List<string> Goods { get; set; }
         public string Date { get; set; } = DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString();
-        public ushort State { get; set; } = 0;  //0 - Should be done, 1 - done
+        public ushort State { get; set; } = 0; 
         public string Data { get; set; } = string.Empty;
 
         public InputFile Pict { get; set; } = null;

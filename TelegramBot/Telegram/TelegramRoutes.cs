@@ -59,7 +59,7 @@ namespace TelegramBot.TelegramAPI
                                  new InlineKeyboardButton[]
                                  {
                                    InlineKeyboardButton.WithCallbackData("Просмотреть корзину","main/cart"),
-                                   InlineKeyboardButton.WithCallbackData("Назад","main/items"),
+                                   InlineKeyboardButton.WithCallbackData("Назад","main/itemsPrev"),
                                  },
                               });
                     await _botClient.SendTextMessageAsync(chat, "Товар добавлен в корзину!", replyMarkup: inlineKeyboard);
@@ -93,7 +93,7 @@ namespace TelegramBot.TelegramAPI
                     goods.Append(Items.All.FirstOrDefault(v => v.Identifier == good).Name + "\r\n");
                 }
                 await _botClient.SendTextMessageAsync(cChat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {purch.Date} (МСК)\r\n🗳️ Категория: {purch.ToModel().GetCategories()[0]}\r\n🛍️ Товары:\r\n {goods.ToString()}💰 Цена: {purch.Cost}₽\r\n\r\n🔔 Введите 6-значный код с почты\r\n\U0001f9fe Формат: 123456\r\n\r\n⚠️ Кода нет 5 минут? – Нажмите на кнопку👇",replyMarkup:inlineKeyboard);
-                _Bot.ChatStates[chat] = ChatState.GetCode;
+                _Bot.ChatStates[cChat] = ChatState.GetCode;
                 var item = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);
                 item.Data += "\r\n";
                 item.State = 1;
@@ -201,13 +201,32 @@ namespace TelegramBot.TelegramAPI
                 var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
                 await _botClient.SendTextMessageAsync(new ChatId(custID), $"⛔️Ваш заказ {purchID} задержан.\r\n<b>Причина:</b> Оплата не найдена!\r\nЕсли вы не оплатили - оплатите, следуя инструциям.\r\nЕсли вы считайте,что произошла ошибке,обратитесь в поддержку!",replyMarkup: inlineKeyboard,parseMode:ParseMode.Html);
             }
+            else if (pref == "etag")
+            {
+                var data = route[5..].Split('|');
+                var custID = long.Parse(data[0]);
+                var purchID = int.Parse(data[1]);
+                inlineKeyboard = new InlineKeyboardMarkup(
+                          new List<InlineKeyboardButton[]>()
+                          {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster_brawl")
+                                 }
+
+                          });
+
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                await _botClient.SendTextMessageAsync(new ChatId(custID), $"⛔Пожалуйста,введите тэг еще раз!", replyMarkup: inlineKeyboard, parseMode: ParseMode.Html);
+                _Bot.ChatStates[new ChatId(custID)] = ChatState.GetTag;
+            }
             else if (pref == "emco")
             {
                 var data = route[5..].Split('|');
                 var custID = long.Parse(data[0]);
                 var purchID = int.Parse(data[1]);
                 var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
-                _Bot.ChatStates[chat] = ChatState.GetCode;
+                _Bot.ChatStates[new ChatId(custID)] = ChatState.GetCode;
                 await _botClient.SendTextMessageAsync(new ChatId(custID), $"Пришлите код, высланный вам на email");
             }
             else if (pref == "dele")
@@ -362,7 +381,27 @@ namespace TelegramBot.TelegramAPI
                         await _botClient.SendPhotoAsync(chat, Resources.Resources.MainPict, caption: $"👤ID пользователя: {chat.Identifier}\r\n💰Баланс: 0Р\r\n🛒Заказов всего: {_Bot.Context.Purchases.Where(v => v.CustomerID == chat.Identifier).ToList().Count}", replyMarkup: inlineKeyboard);
                         return;
                     }
+                case "main/itemsPrev":
+                    {
 
+                            inlineKeyboard = new InlineKeyboardMarkup(
+                            new List<InlineKeyboardButton[]>()
+                              {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("💳 Подписки","main/subitems"),
+                                    InlineKeyboardButton.WithCallbackData("💎 Supercell","main/items"),   
+                                 },
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main"),
+
+                                 },
+                              });
+                        await _botClient.SendTextMessageAsync(chat, "Что вас интересует?", replyMarkup: inlineKeyboard);
+
+                        return;
+                    }
                 case "main":
                     {
               
@@ -372,7 +411,7 @@ namespace TelegramBot.TelegramAPI
                              {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Каталог","main/items"),
+                                    InlineKeyboardButton.WithCallbackData("Каталог","main/itemsPrev"),
                                  },
                                   new InlineKeyboardButton[]
                                  {
@@ -422,11 +461,20 @@ namespace TelegramBot.TelegramAPI
                         TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
                         DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
 
-                        await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {moscowTime.ToShortDateString()} | {moscowTime.ToShortTimeString()}(МСК)\r\n\r\n🔔 Введите вашу почту Supercell ID \r\n⚠️ Формат: email@gmail.com",parseMode:ParseMode.Html);
-                        
+                      
                         Purchase purchase = new Purchase(id,sum, chat.Identifier, chat.Username, _goods, $"{ moscowTime.ToShortDateString() } | { moscowTime.ToShortTimeString()}", 0,string.Empty,null);
-                        _Bot.ChatStates[chat] = ChatState.GetEmail;
-                    
+
+                        if (purchase.GetCategories()[0] != "Telegram")
+                        {
+                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {moscowTime.ToShortDateString()} | {moscowTime.ToShortTimeString()}(МСК)\r\n\r\n🔔 Введите вашу почту Supercell ID \r\n⚠️ Формат: email@gmail.com", parseMode: ParseMode.Html);
+                            _Bot.ChatStates[chat] = ChatState.GetEmail;
+                        }
+                        else
+                        {
+                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {moscowTime.ToShortDateString()} | {moscowTime.ToShortTimeString()}(МСК)\r\n\r\n🔔 Введите ваш тэг от Telegram \r\n⚠️ Формат: @YourTag", parseMode: ParseMode.Html);
+                            _Bot.ChatStates[chat] = ChatState.GetTag;
+                        }
+                 
                         await _Bot.Context.Purchases.AddAsync(purchase.ToDataModel());
                         await _Bot.Context.SaveChangesAsync();
                         _Bot.CurrentPurchase[chat] = id;
@@ -569,6 +617,7 @@ namespace TelegramBot.TelegramAPI
                         }
                         return;
                     }
+
                 case "main/cart":
                     {
                         
@@ -582,7 +631,7 @@ namespace TelegramBot.TelegramAPI
                             foreach (var item in _Bot.Cart[chat])
                             {
 
-                                answer.Append($"Категория🧾:     <strong>{item.Category}</strong>\r\nНазвание товара📦:     <strong>{item.Name}</strong>\r\nЦена товара💴:     <strong>{item.Price}₽</strong>");
+                                answer.Append($"🗳️ Категория: <strong>{item.Category}</strong>\r\n📦 Товар: <strong>{item.Name}</strong>\r\n💰Стоимость: <strong>{item.Price}₽</strong>");
                                 answer.Append("\r\n----------------------------\r\n");
                                 sum += item.Price;
                             }
@@ -599,7 +648,7 @@ namespace TelegramBot.TelegramAPI
                                   new InlineKeyboardButton[]
                                  {
                                       InlineKeyboardButton.WithCallbackData("Очистить корзину","main/cart/clear"),
-                                    InlineKeyboardButton.WithCallbackData("Назад","main/items"),
+                                    InlineKeyboardButton.WithCallbackData("Назад","main/itemsPrev"),
                                    
                                  },
 
@@ -608,7 +657,7 @@ namespace TelegramBot.TelegramAPI
                         }
                         else
                         {
-                            answer.Append("<strong> Здесь пусто!!!</strong>");
+                            answer.Append("<strong> ❌ Корзина пуста! Загляни в каталог, чтобы выбрать нужный товар 🛍️</strong>");
                             inlineKeyboard = new InlineKeyboardMarkup(
                            new List<InlineKeyboardButton[]>()
                             {
@@ -621,7 +670,7 @@ namespace TelegramBot.TelegramAPI
                            });
                         }
                         answer.Append("\r\n\r\n");
-                        answer.Append($"<strong>Итого: {sum}₽ </strong>") ;
+                        answer.Append($"<strong>🧾 Итоговая цена: {sum}₽ </strong>") ;
                         
 
                         _botClient.SendPhotoAsync(chat,Resources.Resources.CartPict, caption:answer.ToString(),replyMarkup:inlineKeyboard, parseMode: ParseMode.Html);
@@ -645,6 +694,34 @@ namespace TelegramBot.TelegramAPI
                         await _botClient.SendTextMessageAsync(chat, "Выберите товар,который вы бы хотели убрать из корзины",replyMarkup:inlineKeyboard);
                         return;
                     }
+                case "main/subitems":
+                    {
+
+                        inlineKeyboard = new InlineKeyboardMarkup(
+                             new List<InlineKeyboardButton[]>()
+                              {
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                     InlineKeyboardButton.WithCallbackData("Telegram 🌟","main/items/telegram"),
+                                 },
+                                 new InlineKeyboardButton[]
+                                 {
+
+                                    InlineKeyboardButton.WithCallbackData("Discord","main/items/royale"),
+                                    InlineKeyboardButton.WithCallbackData("Spotify","main/items/clans"),
+
+                                 },
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main/itemsPrev"),
+                                 },
+
+                             });
+                        await _botClient.SendTextMessageAsync(chat, "Выберите платформу", replyMarkup: inlineKeyboard);
+                        return;
+                    }
+
                 case "main/items":
                     {
 
@@ -666,13 +743,40 @@ namespace TelegramBot.TelegramAPI
                                  new InlineKeyboardButton[]
                                  {
 
-                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main"),
+                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main/itemsPrev"),
                                  },
 
                              });
                         await _botClient.SendTextMessageAsync(chat, "Выберите игру", replyMarkup: inlineKeyboard);
                         return;
                     }
+                case "main/items/telegram":
+                    {
+                        inlineKeyboard = new InlineKeyboardMarkup(
+                             new List<InlineKeyboardButton[]>()
+                              {
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Premium на месяц","buy/telprem1"),
+                                 },
+
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Premium на 12 месяцев","buy/telprem12"),
+
+
+                                 },
+                                   new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Назад","main/subitems"),
+                                 },
+                             });
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.BrawlPict, caption: "Товары доступные для Telegram", replyMarkup: inlineKeyboard);
+                        return;
+                                       
+                    }
+
                 case "main/items/brawl":
                     {
 
@@ -689,16 +793,16 @@ namespace TelegramBot.TelegramAPI
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("30 гемов","buy/brgems30"),
-                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/brgems80"),
-                                    InlineKeyboardButton.WithCallbackData("170 гемов","buy/brgems170"),
+                                    InlineKeyboardButton.WithCallbackData("💎 30 гемов","buy/brgems30"),
+                                    InlineKeyboardButton.WithCallbackData("💎 80 гемов","buy/brgems80"),
+                                    InlineKeyboardButton.WithCallbackData("💎 170 гемов","buy/brgems170"),
                                  },
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("360 гемов","buy/brgems360"),
-                                    InlineKeyboardButton.WithCallbackData("950 гемов","buy/brgems950"),
-                                    InlineKeyboardButton.WithCallbackData("2000 гемов","buy/brgems2000"),
+                                    InlineKeyboardButton.WithCallbackData("💎 360 гемов","buy/brgems360"),
+                                    InlineKeyboardButton.WithCallbackData("💎 950 гемов","buy/brgems950"),
+                                    InlineKeyboardButton.WithCallbackData("💎 2000 гемов","buy/brgems2000"),
                                  },
 
                                  new InlineKeyboardButton[]
@@ -728,16 +832,16 @@ namespace TelegramBot.TelegramAPI
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/clgems80"),
-                                    InlineKeyboardButton.WithCallbackData("500 гемов","buy/clgems500"),
-                                    InlineKeyboardButton.WithCallbackData("1200 гемов","buy/clgems1200"),
+                                    InlineKeyboardButton.WithCallbackData("💎 80 гемов","buy/clgems80"),
+                                    InlineKeyboardButton.WithCallbackData("💎 500 гемов","buy/clgems500"),
+                                    InlineKeyboardButton.WithCallbackData("💎 1200 гемов","buy/clgems1200"),
                                  },
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("2500 гемов","buy/clgems2500"),
-                                    InlineKeyboardButton.WithCallbackData("6500 гемов","buy/clgems6500"),
-                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clgems14000"),
+                                    InlineKeyboardButton.WithCallbackData("💎 2500 гемов","buy/clgems2500"),
+                                    InlineKeyboardButton.WithCallbackData("💎 6500 гемов","buy/clgems6500"),
+                                    InlineKeyboardButton.WithCallbackData("💎 14000 гемов","buy/clgems14000"),
                                  },
 
                                  new InlineKeyboardButton[]
@@ -762,16 +866,16 @@ namespace TelegramBot.TelegramAPI
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/clcgems80"),
-                                    InlineKeyboardButton.WithCallbackData("500 гемов","buy/clcgems500"),
-                                    InlineKeyboardButton.WithCallbackData("1200 гемов","buy/clcgems1200"),
+                                    InlineKeyboardButton.WithCallbackData("💎 80 гемов","buy/clcgems80"),
+                                    InlineKeyboardButton.WithCallbackData("💎 500 гемов","buy/clcgems500"),
+                                    InlineKeyboardButton.WithCallbackData("💎 1200 гемов","buy/clcgems1200"),
                                  },
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("2500 гемов","buy/clcgems2500"),
-                                    InlineKeyboardButton.WithCallbackData("6500 гемов","buy/clcgems6500"),
-                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clcgems14000"),
+                                    InlineKeyboardButton.WithCallbackData("💎 2500 гемов","buy/clcgems2500"),
+                                    InlineKeyboardButton.WithCallbackData("💎 6500 гемов","buy/clcgems6500"),
+                                    InlineKeyboardButton.WithCallbackData("💎 14000 гемов","buy/clcgems14000"),
                                  },
 
                                  new InlineKeyboardButton[]

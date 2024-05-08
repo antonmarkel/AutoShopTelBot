@@ -30,6 +30,12 @@ namespace TelegramBot
 
         }
 
+        public static bool IsValidTelegramTag(string tag)
+        {
+            if (tag.Length > 0 && tag[0] == '@') return true;
+            return false;
+        }
+
         public static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))

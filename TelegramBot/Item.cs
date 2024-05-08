@@ -24,7 +24,7 @@ namespace TelegramBot
             new Item("brpass") { Name = "Brawl Pass",Category = "Brawl Stars", Price = 749,  },
             new Item("brpass+") { Name = "Brawl Pass+",Category = "Brawl Stars", Price = 1049, },
             new Item("brupg") { Name = "Улучшение БП на БП+",Category = "Brawl Stars", Price = 449, },
-            new Item("brlili") { Name = "Новый персонаж Лили",Category ="Brawl Starts", Price = 1999, },
+            new Item("brlili") { Name = "Новый персонаж Лили",Category ="Brawl Stars", Price = 1999, },
 
             new Item("clgems80") { Name = "80 гемов",Category = "Clash Royale", Price = 150, Picture = Resources.Resources.GemsPict},
              new Item("clgems500") { Name = "500 гемов",Category = "Clash Royale", Price = 600, Picture = Resources.Resources.GemsPict},
@@ -44,6 +44,10 @@ namespace TelegramBot
                   new Item("clcgoldpass") { Name = "Золотой пропуск",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
                     new Item("clcpass") { Name = "Пропуск события",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
 
+              new Item("telprem1") { Name = "Телеграм преимиум на месяц",Category = "Telegram", Price = 300, Picture = Resources.Resources.GemsPict},
+             new Item("telprem12") { Name = "Телеграм преимиум на 12 месяцев",Category = "Telegram", Price = 1800, Picture = Resources.Resources.GemsPict},
+        
+
     };
 }
 public class Item
@@ -62,7 +66,7 @@ public class Item
                                  new InlineKeyboardButton[]
                                  {
                                    InlineKeyboardButton.WithCallbackData("Да","cart/" + this.Identifier),
-                                   InlineKeyboardButton.WithCallbackData("Нет","main/items"),
+                                   InlineKeyboardButton.WithCallbackData("Нет","main/itemsPrev"),
                                  },
                                }) ;
            //if (Picture != null) Telegram.TelegramBot.MessagesToDelete[chat].AddRange( await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Picture }));

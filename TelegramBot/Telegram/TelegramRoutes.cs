@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -115,7 +116,7 @@ namespace TelegramBot.TelegramAPI
                            {
                                  new InlineKeyboardButton[]
                                  {
-                                       InlineKeyboardButton.WithUrl("Отзывы","https://t.me/LancasterReviews"),
+                                       InlineKeyboardButton.WithUrl("📝 Оставить отзыв","https://t.me/LancasterReviews"),
                                  },
                                   new InlineKeyboardButton[]
                                  {
@@ -242,6 +243,34 @@ namespace TelegramBot.TelegramAPI
                 _Bot.Cart[chat].Remove(_Bot.Cart[chat].FirstOrDefault(v => v.Identifier == itemIdent));
                 _Bot.SetRoute("main/cart/change", chat);
             }
+
+            else if(pref == "askq")
+            {
+                var data = route[5..].Split('|');
+                var custID = long.Parse(data[0]);
+                var purchID = int.Parse(data[1]);
+                ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(
+                    new List<List<KeyboardButton>>() {
+                        new List<KeyboardButton>()
+                        {
+                            new KeyboardButton("Спросить название скина"),                      
+                        },
+                         new List<KeyboardButton>()
+                        {
+                         
+                            new KeyboardButton("Спросить название оформления"),
+                        },
+                          new List<KeyboardButton>()
+                        {
+                          new KeyboardButton("Назад"),
+                        }
+                    }
+                    );
+                await _botClient.SendTextMessageAsync(chat, $"Введите любой вопрос,который хотите задать",replyMarkup:markup);
+                _Bot.ChatStates[chat] = ChatState.AskData;
+                _Bot.AskDataStates[chat] = Question.New(new ChatId(custID), string.Empty, purchID);
+                
+            }
             else if (pref == "kill")
             {
                 var data = route[5..].Split('|');
@@ -326,7 +355,7 @@ namespace TelegramBot.TelegramAPI
                                  },
                             });
                         await _botClient.SendTextMessageAsync(chat, "Вас приветствует бот,который очень хочет сделать ваш процесс покупок легким и быстрым!\r\n" +
-                            "⚠️ Чтобы использовать бота, необходимо быть подписанным на наш магазин - @LanDonate", replyMarkup: inlineKeyboard);
+                            "⚠️ Чтобы использовать бота, необходимо быть подписанным на наш магазин - @LancasterSquad", replyMarkup: inlineKeyboard);
 
                         return;
                     }
@@ -338,7 +367,7 @@ namespace TelegramBot.TelegramAPI
                         
                         var chatMember = await _botClient.GetChatMemberAsync(_Bot.GroupId, (long)ID);
                         Utils.Log($"[{chat.Identifier}] {chatMember.Status.ToString()}");
-                     
+
                         if (chatMember.Status == ChatMemberStatus.Member || chatMember.Status == ChatMemberStatus.Administrator || chatMember.Status == ChatMemberStatus.Creator)
                         {
 
@@ -801,20 +830,20 @@ namespace TelegramBot.TelegramAPI
                 case "main/items/brawl":
                     {
                         var markup = Utils.GetMarkupForItems("Brawl Stars");
-                        await _botClient.SendPhotoAsync(chat,Resources.Resources.BrawlPict,caption: "Товары доступные для Brawl Stars", replyMarkup: markup);
+                        await _botClient.SendPhotoAsync(chat,Resources.Resources.BrawlPict,caption: "🛍️ Товары категории: Brawl Stars", replyMarkup: markup);
                         return;
                     }
                 case "main/items/royale":
                     {
                         var markup = Utils.GetMarkupForItems("Clash Royale");
-                        await _botClient.SendPhotoAsync(chat, Resources.Resources.ClashPict, caption: "Товары доступные для Clash Royale", replyMarkup: markup);
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.ClashPict, caption: "🛍️ Товары категории: Clash Royale", replyMarkup: markup);
                         return;
                     }
                 case "main/items/clans":
                     {
 
                         var markup = Utils.GetMarkupForItems("Clash of Clans");
-                        await _botClient.SendPhotoAsync(chat, Resources.Resources.ClansPict, caption: "Товары доступные для Clash of Clans", replyMarkup:markup);
+                        await _botClient.SendPhotoAsync(chat, Resources.Resources.ClansPict, caption: "🛍️ Товары категории: Clash of Clans", replyMarkup:markup);
                         return;
                     }
             }

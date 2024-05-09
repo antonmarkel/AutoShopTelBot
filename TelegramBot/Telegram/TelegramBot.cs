@@ -22,12 +22,26 @@ namespace TelegramBot.TelegramAPI
         GetCode = 2,
         GetDoc = 3,
         GetTag = 4,
+        GetData = 5,
+        AskData = 6,
+    }
+    public struct Question
+    {
+        public ChatId Receiver;
+        public string Message;
+        public int PurchaseId;
+
+        public static Question New(ChatId chat, string message, int purchaseId)
+        {
+            return new Question() { Receiver = chat, Message = message, PurchaseId = purchaseId };
+        }
     }
     public class TelegramBot
     {
-        public long GroupId { get; set; } = -1002091931355;
+        public long GroupId { get; set; } = -1002007072435;
         public Dictionary<ChatId, int> CurrentPurchase { get; set; } = new Dictionary<ChatId, int>();
         public Dictionary<ChatId, ChatState> ChatStates { get; set; } = new Dictionary<ChatId, ChatState>();
+        public Dictionary<ChatId,Question> AskDataStates { get; set; } = new Dictionary<ChatId, Question>();
         public  Dictionary<ChatId, List<Message>> MessagesToDelete { get; set; } = new Dictionary<ChatId, List<Message>>();
         public  Dictionary<ChatId, List<Item>> Cart { get; set; } = new Dictionary<ChatId, List<Item>>();
         public  BotDataContext Context { get; set; } = new BotDataContext();
@@ -43,7 +57,9 @@ namespace TelegramBot.TelegramAPI
                 AllowedUpdates = new[]
                 {
                     UpdateType.Message,
-                    UpdateType.CallbackQuery
+                    UpdateType.CallbackQuery,
+                    UpdateType.ChannelPost,
+                    
                 },
                 ThrowPendingUpdates = true
             };
@@ -93,6 +109,11 @@ namespace TelegramBot.TelegramAPI
 
                 switch (update.Type)
                 {
+                    case UpdateType.ChannelPost:
+                        {
+                            Utils.Log("$Message from channel", color: ConsoleColor.DarkCyan);
+                            return;
+                        }
                     case UpdateType.Message:
                         {
                             if (update.Message.Chat.Id == GroupId) return;
@@ -106,8 +127,8 @@ namespace TelegramBot.TelegramAPI
                             
                             if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
                             if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
-                         // Console.WriteLine($"{update.Message.Photo[0].FileId}");
-                            //   return;
+                            // Console.WriteLine($"{update.Message.Chat.Id}");
+                             //  return;
                             switch (ChatStates[chat])
                             {
                                 case ChatState.GetEmail:
@@ -222,6 +243,43 @@ namespace TelegramBot.TelegramAPI
                                         }
                                         return;
                                     }
+                                case ChatState.GetData:
+                                    {
+                                        var message = update.Message.Text;
+                                        var purch = Context.Purchases.FirstOrDefault(v => v.ID == CurrentPurchase[chat]);
+                                       
+                                        purch.Data += "\r\n📇Дополнительная инфа:" + message + "\r\n";
+                                        var inlineKeyboard = new InlineKeyboardMarkup(
+                                                  new List<InlineKeyboardButton[]>()
+                                                  {
+                                                 new InlineKeyboardButton[]
+                                                 {
+                                                   InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
+                                                 },
+                                             });
+                                        await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
+                                        await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришли дополнительные данные по заказу.\r\n👤Заказ:{purch.ID}\r\n🛍Товары:\r\n{Utils.GetGoodsString(purch.ToModel())}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽\r\n{purch.Data}", markup: inlineKeyboard, mode: ParseMode.Html);
+                                        ChatStates[chat] = ChatState.Standard;
+                                        SetRoute("main", chat);
+                                        return;
+                                    }
+                                case ChatState.AskData:
+                                    {
+
+                                        var message = update.Message.Text;if(message == "Назад") { ChatStates[chat] = ChatState.Standard;return; }
+                                        if (message == "Спросить название скина") message = "Пожалуйста,напишите название скина";
+                                        if(message == "Спросить название оформления") message = "Пожалуйста,напишите название оформления";
+                                        if (!AskDataStates.ContainsKey(chat)) return;
+                                        var _base = AskDataStates[chat]; _base.Message = message;
+
+                                        ChatStates[_base.Receiver] = ChatState.GetData;
+                                        CurrentPurchase[_base.Receiver] = _base.PurchaseId;
+                                        await _botClient.SendTextMessageAsync(_base.Receiver, $"🔔 Сообщение от продавца, по заказу {_base.PurchaseId}\r\n\r\n{message}");
+                                       // await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришли дополнительные данные по заказу.\r\n👤Заказ:{purch.ID}\r\n🛍Товары:\r\n{Utils.GetGoodsString(purch.ToModel())}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽\r\n{purch.Data}", markup: inlineKeyboard, mode: ParseMode.Html);
+                                        if(_base.Receiver != chat)ChatStates[chat] = ChatState.Standard;
+                                        return;
+                                    }
+
                             }
                             await Context.SaveChangesAsync();
 

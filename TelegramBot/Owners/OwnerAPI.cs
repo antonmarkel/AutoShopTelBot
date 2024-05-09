@@ -17,6 +17,7 @@ namespace TelegramBot.Owner
         
         public static List<long> Owners { get; set; } = new List<long>(){ 851274731, 5270690035 };
 
+
         public static async Task<bool>IsOwner(ChatId chatId)
         {
             return Owners.FirstOrDefault(v => v == chatId.Identifier) != 0;
@@ -96,6 +97,11 @@ namespace TelegramBot.Owner
                                  },
                                   new InlineKeyboardButton[]
                                  {
+                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
+
+                                 },
+                                  new InlineKeyboardButton[]
+                                 {
                                     InlineKeyboardButton.WithCallbackData("Нет оплаты(Удалить заказ)",$"empa|{purch.CustomerID}|{purch.ID}")
 
                                  },
@@ -143,6 +149,7 @@ namespace TelegramBot.Owner
                                     InlineKeyboardButton.WithCallbackData("Предупредить пользователя!",$"game|{purch.CustomerID}|{purch.ID}")
 
                                  },
+                               
                                  new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.ID}")
@@ -151,6 +158,11 @@ namespace TelegramBot.Owner
                                  new InlineKeyboardButton[]
                                  {
                                      InlineKeyboardButton.WithCallbackData("Запросить тэг для Telegram",$"etag|{purch.CustomerID}|{purch.ID}")
+                                 },
+                                       new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
+
                                  },
                                   new InlineKeyboardButton[]
                                  {
@@ -220,6 +232,11 @@ namespace TelegramBot.Owner
                                     InlineKeyboardButton.WithCallbackData("Запросить имейл еще раз",$"emer|{purch.CustomerID}|{purch.ID}")
 
                                  },
+                                    new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
+
+                                 },
                                   new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Нет оплаты(Удалить заказ)",$"empa|{purch.CustomerID}|{purch.ID}")
@@ -272,6 +289,11 @@ namespace TelegramBot.Owner
                                  new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.ID}")
+
+                                 },
+                                       new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
 
                                  },
                                   new InlineKeyboardButton[]

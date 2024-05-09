@@ -10,6 +10,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TelegramBot.TelegramAPI
 {
@@ -227,7 +228,7 @@ namespace TelegramBot.TelegramAPI
                 var purchID = int.Parse(data[1]);
                 var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
                 _Bot.ChatStates[new ChatId(custID)] = ChatState.GetCode;
-                await _botClient.SendTextMessageAsync(new ChatId(custID), $"Пришлите код, высланный вам на email");
+                await _botClient.SendTextMessageAsync(new ChatId(custID), $"⛔Пожалуйста,введите код еще раз!");
             }
             else if (pref == "dele")
             {
@@ -247,6 +248,18 @@ namespace TelegramBot.TelegramAPI
                 _Bot.Context.Purchases.Remove(purch);
                 await _Bot.Context.SaveChangesAsync();
                 await _botClient.SendTextMessageAsync(new ChatId(custID), $"❌ Ваш заказ [{purch.ID}] был отменён Менеджером.");
+
+            }
+            else if (pref == "game")
+            {
+                var data = route[5..].Split('|');
+                var custID = long.Parse(data[0]);
+                var purchID = int.Parse(data[1]);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                Owner.OwnerAPI.ShowTask(chat, _botClient, _Bot, purch.ToModel());
+                if (purch == null) { _botClient.SendTextMessageAsync(chat, "Заказ был удален!"); return; }
+
+                await _botClient.SendTextMessageAsync(new ChatId(custID), $"⚠️ Ваш заказ выполняется! Просьба не заходить в игру до завершения покупки");
 
             }
             else if (pref == "docu")
@@ -317,10 +330,12 @@ namespace TelegramBot.TelegramAPI
                         
                         var chatMember = await _botClient.GetChatMemberAsync(_Bot.GroupId, (long)ID);
                         Utils.Log($"[{chat.Identifier}] {chatMember.Status.ToString()}");
+                     
                         if (chatMember.Status == ChatMemberStatus.Member || chatMember.Status == ChatMemberStatus.Administrator || chatMember.Status == ChatMemberStatus.Creator)
                         {
 
-                           // await _botClient.SendTextMessageAsync(chat, "Спасибо за подписку!\r\n Теперь можете пользоваться ботом");
+                            //await _botClient.SendTextMessageAsync(chat, "Спасибо за подписку!\r\n Теперь можете пользоваться ботом!");
+                            
                             await _Bot.SetRoute("main", chat);
                         }
                         else
@@ -338,10 +353,10 @@ namespace TelegramBot.TelegramAPI
                             {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Правила","main/items"),
-                                      InlineKeyboardButton.WithUrl("Отзывы","https://t.me/LancasterReviews"),
-                                      InlineKeyboardButton.WithCallbackData("FAQ","main"),
-                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster_brawl")
+                                    InlineKeyboardButton.WithCallbackData("Правила","main/items"),     
+                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster_brawl"),
+                                    InlineKeyboardButton.WithCallbackData("Правила","main/rules")
+
                                  },
                                   new InlineKeyboardButton[]
                                  {
@@ -354,9 +369,32 @@ namespace TelegramBot.TelegramAPI
                                     InlineKeyboardButton.WithCallbackData("🔙 Вернуться в меню","main"),
                                  },
 
-                            });
+                            });;
 
                         await _botClient.SendPhotoAsync(chat, Resources.Resources.MainPict, caption: $"Здесь вы можете ознакомится с нашим магазином чуточку ближе", replyMarkup: inlineKeyboard);
+                        return;
+                    }
+                case "main/rules":
+                    {
+
+                        inlineKeyboard = new InlineKeyboardMarkup(
+                              new List<InlineKeyboardButton[]>()
+                              {
+                                 new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("🔙 Вернуться назад","main/info"),
+
+                                 },
+                              });
+
+                        await _botClient.SendTextMessageAsync(chat, "Политика использования \r\nЦель магазина: Магазин предоставляет услуги по продаже игровых донатов для улучшения игрового опыта в различных онлайн-играх.\r\n\r\nПравила использования: Пользователи обязаны соблюдать все применимые законы и правила платформ," +
+                            " на которых они используют купленные донаты. Запрещены попытки обмана, мошенничество и другие недопустимые действия.\r\n\r\nПрием платежей: Мы принимаем платежи через указанные методы, обеспечивая безопасность и конфиденциальность ваших данных.\r\n\r\nОбязательства магазина: Магазин обязуется" +
+                            " предоставить вам купленный игровой донат после успешной оплаты.\r\n\r\nОтветственность пользователя: Вы несете ответственность за предоставление правильной информации при заказе услуги. Пользователи должны предоставить корректные данные для успешного выполнения заказа.\r\n\r\nЗапрещенные действия:" +
+                            " Запрещены действия, направленные на мошенничество, включая попытки возврата средств после получения услуги.\r\n\r\nПолитика возврата\r\nУсловия возврата: Вы можете запросить возврат средств, если полученные услуги были некачественными или не предоставлены в соответствии с условиями заказа.\r\n\r\n" +
+                            "Процедура возврата: Для запроса возврата, свяжитесь с нашей службой поддержки по указанным контактным данным. Мы рассмотрим ваш запрос и произведем возврат средств на вашу карту/кошелек.\r\n\r\nСроки возврата: Мы постараемся рассмотреть ваш запрос в кратчайшие сроки.\r\n\r\nПолитика конфиденциальности" +
+                            "\r\nСбор информации: Мы можем собирать определенную информацию от пользователей для обработки заказов и улучшения сервиса.\r\n\r\nИспользование информации: Мы обеспечиваем безопасное и конфиденциальное хранение ваших данных. Информация будет использована исключительно для обработки заказов и обратной связи " +
+                            "с вами.\r\n\r\nРазглашение информации: Мы не раскроем вашу информацию третьим лицам, за исключением случаев, предусмотренных законом или в случаях, когда это необходимо для выполнения заказа (например, передача информации платежным системам).\r\n\r\nСогласие пользователя: Используя наши услуги, вы соглашаетесь" +
+                            " с нашей политикой конфиденциальности.", replyMarkup: inlineKeyboard);
                         return;
                     }
                 case "main/profile":
@@ -445,7 +483,7 @@ namespace TelegramBot.TelegramAPI
                 case "main/paid":
                     {
                         
-                        decimal sum = 0;
+                        ulong sum = 0;
                         List<string> _goods = new List<string>();
                         if (_Bot.Cart[chat].Count > 0)
                         {
@@ -484,7 +522,7 @@ namespace TelegramBot.TelegramAPI
                     }
                 case "main/pay":
                     {
-                        decimal sum = 0;
+                        ulong sum = 0;
 
                         List<string> _goods = new List<string>();
                         if (_Bot.Cart[chat].Count > 0)
@@ -793,16 +831,16 @@ namespace TelegramBot.TelegramAPI
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("💎 30 гемов","buy/brgems30"),
-                                    InlineKeyboardButton.WithCallbackData("💎 80 гемов","buy/brgems80"),
-                                    InlineKeyboardButton.WithCallbackData("💎 170 гемов","buy/brgems170"),
+                                    InlineKeyboardButton.WithCallbackData("30 гемов","buy/brgems30"),
+                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/brgems80"),
+                                    InlineKeyboardButton.WithCallbackData("170 гемов","buy/brgems170"),
                                  },
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("💎 360 гемов","buy/brgems360"),
-                                    InlineKeyboardButton.WithCallbackData("💎 950 гемов","buy/brgems950"),
-                                    InlineKeyboardButton.WithCallbackData("💎 2000 гемов","buy/brgems2000"),
+                                    InlineKeyboardButton.WithCallbackData("360 гемов","buy/brgems360"),
+                                    InlineKeyboardButton.WithCallbackData("950 гемов","buy/brgems950"),
+                                    InlineKeyboardButton.WithCallbackData("2000 гемов","buy/brgems2000"),
                                  },
 
                                  new InlineKeyboardButton[]
@@ -832,16 +870,16 @@ namespace TelegramBot.TelegramAPI
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("💎 80 гемов","buy/clgems80"),
-                                    InlineKeyboardButton.WithCallbackData("💎 500 гемов","buy/clgems500"),
-                                    InlineKeyboardButton.WithCallbackData("💎 1200 гемов","buy/clgems1200"),
+                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/clgems80"),
+                                    InlineKeyboardButton.WithCallbackData("500 гемов","buy/clgems500"),
+                                    InlineKeyboardButton.WithCallbackData("1200 гемов","buy/clgems1200"),
                                  },
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("💎 2500 гемов","buy/clgems2500"),
-                                    InlineKeyboardButton.WithCallbackData("💎 6500 гемов","buy/clgems6500"),
-                                    InlineKeyboardButton.WithCallbackData("💎 14000 гемов","buy/clgems14000"),
+                                    InlineKeyboardButton.WithCallbackData("2500 гемов","buy/clgems2500"),
+                                    InlineKeyboardButton.WithCallbackData("6500 гемов","buy/clgems6500"),
+                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clgems14000"),
                                  },
 
                                  new InlineKeyboardButton[]
@@ -866,16 +904,16 @@ namespace TelegramBot.TelegramAPI
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("💎 80 гемов","buy/clcgems80"),
-                                    InlineKeyboardButton.WithCallbackData("💎 500 гемов","buy/clcgems500"),
-                                    InlineKeyboardButton.WithCallbackData("💎 1200 гемов","buy/clcgems1200"),
+                                    InlineKeyboardButton.WithCallbackData("80 гемов","buy/clcgems80"),
+                                    InlineKeyboardButton.WithCallbackData("500 гемов","buy/clcgems500"),
+                                    InlineKeyboardButton.WithCallbackData("200 гемов","buy/clcgems1200"),
                                  },
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("💎 2500 гемов","buy/clcgems2500"),
-                                    InlineKeyboardButton.WithCallbackData("💎 6500 гемов","buy/clcgems6500"),
-                                    InlineKeyboardButton.WithCallbackData("💎 14000 гемов","buy/clcgems14000"),
+                                    InlineKeyboardButton.WithCallbackData("2500 гемов","buy/clcgems2500"),
+                                    InlineKeyboardButton.WithCallbackData("6500 гемов","buy/clcgems6500"),
+                                    InlineKeyboardButton.WithCallbackData("14000 гемов","buy/clcgems14000"),
                                  },
 
                                  new InlineKeyboardButton[]

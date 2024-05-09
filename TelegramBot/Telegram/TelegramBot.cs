@@ -101,11 +101,13 @@ namespace TelegramBot.TelegramAPI
 
                             var updateMessage = update.Message.Text;
                             var chat = update.Message.Chat;
-
+                         
+                         
+                            
                             if (!MessagesToDelete.ContainsKey(chat)) { MessagesToDelete.Add(chat, new List<Message>()); }
                             if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
-                            //Console.WriteLine($"{update.Message.Photo[0].FileId}");
-                            //      return;
+                           // Console.WriteLine($"{update.Message.Photo[0].FileId}");
+                            //   return;
                             switch (ChatStates[chat])
                             {
                                 case ChatState.GetEmail:
@@ -132,8 +134,8 @@ namespace TelegramBot.TelegramAPI
                                              });
 
                                             purch.Data += "\r\nEmail: " + message;
-                                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
-                                            await SetRoute("main", chat);
+                                            await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание подтверждения продавца\r\n⏰ Время: {purch.Date}\r\nПродавцы отвечают менее чем за 30 минут");
+                                            //await SetRoute("main", chat);
                                             await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришла почта.\r\n👤Заказ: {purch.ID}\r\n📩Почта: {message}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽", markup: inlineKeyboard);
 
 
@@ -164,7 +166,7 @@ namespace TelegramBot.TelegramAPI
 
                                             purch.Data += "\r\nTag: " + message;
                                             await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
-                                            await SetRoute("main", chat);
+                                            //await SetRoute("main", chat);
                                             await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришел тэг для Telegram. Зайди в активные заказы\r\n👤Заказ: {purch.ID}\r\n📩Tэг: {message}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽", markup: inlineKeyboard);
                                             purch.State = 1;
 
@@ -190,6 +192,7 @@ namespace TelegramBot.TelegramAPI
                                                    InlineKeyboardButton.WithCallbackData("Перейти к заказу",$"show|{purch.ID}"),
                                                  },
                                              });
+                                        await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Ожидание продавца\r\n⏰ Время: {purch.Date}");
                                         await Owner.OwnerAPI.NotifyOnwers(_botClient, $"🔔 Оповещение! Пришёл код.\r\n👤Заказ:{purch.ID}\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽\r\n{purch.Data}", markup: inlineKeyboard,mode:ParseMode.Html);
                                         ChatStates[chat] = ChatState.Standard;
                                         return;
@@ -211,7 +214,7 @@ namespace TelegramBot.TelegramAPI
                                                  },
                                              });
                                             await Owner.OwnerAPI.NotifyOnwers(_botClient, $"Получено подтверждение оплаты\r\n🗳️Категория: {purch.ToModel().GetCategories()[0]}\r\n💰Цена: {purch.Cost}₽", markup: inlineKeyboard);
-                                            await SetRoute("main", chat);
+                                            //await SetRoute("main", chat);
                                         }
                                         else
                                         {

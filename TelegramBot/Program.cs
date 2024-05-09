@@ -8,7 +8,7 @@ internal class Program
     private static void Main(string[] args)
     {
         Console.WriteLine("Hello, World!");
-        TelegramBot.TelegramAPI.TelegramBot bot = new TelegramBot.TelegramAPI.TelegramBot("7106270577:AAHNhXB5NSa6BZkTSOjQX_BsPZShneyqvU8");
+        TelegramBot.TelegramAPI.TelegramBot bot = new TelegramBot.TelegramAPI.TelegramBot("6417717622:AAFvbn6ME0yJeXLCtctSNTYwddaykAMCAZU");
         bot.Start().Wait();
 
     }

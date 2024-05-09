@@ -32,8 +32,8 @@ namespace TelegramBot
                new Item("clgems2500") { Name = "2500 гемов",Category = "Clash Royale", Price = 2100, Picture = Resources.Resources.GemsPict},
                 new Item("clgems6500") { Name = "6500 гемов",Category = "Clash Royale", Price = 5000, Picture = Resources.Resources.GemsPict},
                  new Item("clgems14000") { Name = "14000 гемов",Category = "Clash Royale", Price = 10000, Picture = Resources.Resources.GemsPict},
-                  new Item("clgoldpass") { Name = "Золотой пропуск",Category = "Clash Royale", Price = 650, Picture = Resources.Resources.GemsPict},
-                   new Item("clironpass") { Name = "Алмазный пропуск",Category = "Clash Royale", Price = 1300, Picture = Resources.Resources.GemsPict},
+                  new Item("clgoldpass") { Name = "Золотой пропуск",Category = "Clash Royale", Price = 650},
+                   new Item("clironpass") { Name = "Алмазный пропуск",Category = "Clash Royale", Price = 1300},
                    
             new Item("clsgems80") { Name = "80 гемов",Category = "Clash of Clans", Price = 150, Picture = Resources.Resources.GemsPict},
              new Item("clcgems500") { Name = "500 гемов",Category = "Clash of Clans", Price = 600, Picture = Resources.Resources.GemsPict},
@@ -41,11 +41,11 @@ namespace TelegramBot
                new Item("clcgems2500") { Name = "2500 гемов",Category = "Clash of Clans", Price = 2100, Picture = Resources.Resources.GemsPict},
                 new Item("clcgems6500") { Name = "6500 гемов",Category = "Clash Royale", Price = 5000, Picture = Resources.Resources.GemsPict},
                  new Item("clcgems14000") { Name = "14000 гемов",Category = "Clash of Clans", Price = 10000, Picture = Resources.Resources.GemsPict},
-                  new Item("clcgoldpass") { Name = "Золотой пропуск",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
-                    new Item("clcpass") { Name = "Пропуск события",Category = "Clash of Clans", Price = 650, Picture = Resources.Resources.GemsPict},
+                  new Item("clcgoldpass") { Name = "Золотой пропуск",Category = "Clash of Clans", Price = 650},
+                    new Item("clcpass") { Name = "Пропуск события",Category = "Clash of Clans", Price = 650},
 
-              new Item("telprem1") { Name = "Телеграм преимиум на месяц",Category = "Telegram", Price = 300, Picture = Resources.Resources.GemsPict},
-             new Item("telprem12") { Name = "Телеграм преимиум на 12 месяцев",Category = "Telegram", Price = 1800, Picture = Resources.Resources.GemsPict},
+              new Item("telprem1") { Name = "Телеграм преимиум на месяц",Category = "Telegram", Price = 300},
+             new Item("telprem12") { Name = "Телеграм преимиум на 12 месяцев",Category = "Telegram", Price = 1800},
         
 
     };
@@ -56,7 +56,7 @@ public class Item
         public string Identifier { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Category { get;set; } = string.Empty;
-        public decimal Price { get; set; }
+        public ulong Price { get; set; }
         public InputFile Picture { get; set; }
         public async Task SendItemAsync(ITelegramBotClient _botClient, ChatId chat)
         {
@@ -69,8 +69,8 @@ public class Item
                                    InlineKeyboardButton.WithCallbackData("Нет","main/itemsPrev"),
                                  },
                                }) ;
-           //if (Picture != null) Telegram.TelegramBot.MessagesToDelete[chat].AddRange( await _botClient.SendMediaGroupAsync(chat, new List<IAlbumInputMedia>() { Picture }));
-           await _botClient.SendTextMessageAsync(chat, $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+            if (Picture != null) await _botClient.SendPhotoAsync(chat, Picture, caption: $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?", replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+          else  await _botClient.SendTextMessageAsync(chat, $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
         }
 
         public Item(string Identifier) {  this.Identifier = Identifier; }

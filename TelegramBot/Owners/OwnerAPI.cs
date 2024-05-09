@@ -140,6 +140,11 @@ namespace TelegramBot.Owner
                                  },
                                  new InlineKeyboardButton[]
                                  {
+                                    InlineKeyboardButton.WithCallbackData("Предупредить пользователя!",$"game|{purch.CustomerID}|{purch.ID}")
+
+                                 },
+                                 new InlineKeyboardButton[]
+                                 {
                                     InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.ID}")
 
                                  },

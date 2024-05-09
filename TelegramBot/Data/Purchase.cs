@@ -12,7 +12,7 @@ namespace TelegramBot.Data
     public class Purchase
     {
         public int ID { get; set; }
-        public decimal Cost { get; set; }   
+        public ulong Cost { get; set; }   
         public long? CustomerID { get;set; }
         public string CustomerName { get; set; }
         public List<string> Goods { get; set; }
@@ -36,7 +36,7 @@ namespace TelegramBot.Data
             PictFileID = dataModel.PictFileID;
             if(dataModel.PictFileID != null)Pict = InputFile.FromFileId(dataModel.PictFileID);
         }
-        public Purchase(int iD, decimal cost, long? customerID, string customerName, List<string> goods, string date, ushort state, string data, InputFile pict)
+        public Purchase(int iD, ulong cost, long? customerID, string customerName, List<string> goods, string date, ushort state, string data, InputFile pict)
         {
             ID = iD;
             Cost = cost;

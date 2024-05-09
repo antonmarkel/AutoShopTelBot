@@ -20,6 +20,7 @@ namespace TelegramBot
             return true;
         }
         public static void Log(string message,ConsoleColor color = ConsoleColor.Black) {
+            Console.ResetColor();
             TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
             DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
             Console.ForegroundColor = ConsoleColor.Yellow;

@@ -9,14 +9,15 @@ namespace TelegramBot.Resources
 {
     public static class Resources
     {
-        public static readonly InputFile GemsPict = InputFile.FromFileId("AgACAgIAAxkBAAIB9GYrkjSa884MWlV7hCGaXsyjYs93AAJR3TEbpl5gScYQksDiZAbkAQADAgADcwADNAQ");
-        public static readonly InputFile FeedBackPict = InputFile.FromFileId("AgACAgIAAxkBAAIGYWYtCUKAlwVmXcBhivNkZ16inaR-AAKz3TEbQjtpSfNswwUkGnixAQADAgADcwADNAQ");
-        public static readonly InputFile MainPict = InputFile.FromFileId("AgACAgIAAxkBAAIGY2YtCZpffYWpFnBh1cD18Rx1XoksAAK83TEbQjtpSabiKlW9ksqCAQADAgADcwADNAQ");
-        public static readonly InputFile AdminPict = InputFile.FromFileId("AgACAgIAAxkBAAIGZGYtCbVR2y58az06SjF-K5PbQaD6AAK-3TEbQjtpSUj50Veko18PAQADAgADcwADNAQ");
-        public static readonly InputFile CartPict = InputFile.FromFileId("AgACAgIAAxkBAAIGZWYtCdg7a99LS-vN5ejCV8zDiJ-9AALB3TEbQjtpSb60j92Mc4muAQADAgADcwADNAQ");
-        public static readonly InputFile BrawlPict = InputFile.FromFileId("AgACAgIAAxkBAAIGZmYtCfhgjw-iiKXxxxwavrRVwKZ_AALD3TEbQjtpSY-AyMV1v2-SAQADAgADcwADNAQ");
-        public static readonly InputFile ClashPict = InputFile.FromFileId("AgACAgIAAxkBAAITFGYzbHFB4_zO4s9x2RZXu-ghfgjsAALN2jEby0CZSZgOmHZAi3-WAQADAgADcwADNAQ");
-        public static readonly InputFile ClansPict = InputFile.FromFileId("AgACAgIAAxkBAAITFWYzbJHq3Y2pqPkFW3jk180ce_IKAALP2jEby0CZSRgrHeU_ONdGAQADAgADcwADNAQ");
+        public static readonly InputFile GemsPict = InputFile.FromFileId("AgACAgIAAxkBAAMtZjxfVxX7O8mdYhmNWPDFa9zHPbAAAi_TMRuCHuBJK_Bg1fQfs_UBAAMCAANzAAM1BA");
+        public static readonly InputFile FeedBackPict = InputFile.FromFileId("AgACAgIAAxkBAAMqZjxdlpOUPgeoNY8NHM9VTr5HMrAAAijTMRuCHuBJN8-b0I7_pGYBAAMCAANzAAM1BA");
+        
+        public static readonly InputFile MainPict = InputFile.FromFileId("AgACAgIAAxkBAAMmZjxcmQoCd1i2_8b1ud98CZQStdsAAiHTMRuCHuBJB_-nCZJaDRMBAAMCAANzAAM1BA");
+        public static readonly InputFile AdminPict = InputFile.FromFileId("AgACAgIAAxkBAAMrZjxeI4QtFm5v2n9Yc2ZYvBFlle8AAirTMRuCHuBJUezqdqAl0mUBAAMCAANzAAM1BA");
+        public static readonly InputFile CartPict = InputFile.FromFileId("AgACAgIAAxkBAAMsZjxeRoSbZR0pkwzJvvIM51az-gkAAivTMRuCHuBJqOfQOWwqZEoBAAMCAANzAAM1BA");
+        public static readonly InputFile BrawlPict = InputFile.FromFileId("AgACAgIAAxkBAAMnZjxcyAiQZoK2On7kYZ3-d8K2JaYAAsbVMRs_muBJJcAHNdulqR8BAAMCAANzAAM1BA");
+        public static readonly InputFile ClashPict = InputFile.FromFileId("AgACAgIAAxkBAAMoZjxdC7Zd8bFNMM1Tdtfy6SzuGFkAAiTTMRuCHuBJfi254YD7kWMBAAMCAANzAAM1BA");
+        public static readonly InputFile ClansPict = InputFile.FromFileId("AgACAgIAAxkBAAMpZjxdH3nqxf8125IWY55X2vE4H5gAAiXTMRuCHuBJuHaRtNcxagABAQADAgADcwADNQQ");
 
         static Resources()
         {

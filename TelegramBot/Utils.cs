@@ -1,9 +1,13 @@
-﻿using System;
+﻿using Microsoft.Extensions.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.Data;
 
 namespace TelegramBot
 {
@@ -30,6 +34,32 @@ namespace TelegramBot
             Console.WriteLine(message);
 
         }
+
+        public static InlineKeyboardMarkup GetMarkupForItems(string category,int maxLineLength = 34,int maxItemsPerLine = 3,string backRoute = "main/items")
+        {
+            List<List<InlineKeyboardButton>> autoInline = new List<List<InlineKeyboardButton>>();
+            List<InlineKeyboardButton> curLineButtons = new List<InlineKeyboardButton>();
+
+            int _maxLineLen = maxLineLength, _curLineLen = 0;
+            int _maxItemsPerLine = maxItemsPerLine, _curItemsNum = 0;
+            var items = Items.All.Where(v => v.Category == category).ToList();
+            foreach (var item in items)
+            {
+                _curLineLen += item.Name.Length; _curItemsNum++;
+                if (_curLineLen > _maxLineLen || _curItemsNum > _maxItemsPerLine)
+                {
+                    autoInline.Add(curLineButtons);
+                    curLineButtons = new List<InlineKeyboardButton>();
+                    _curLineLen = item.Name.Length;
+                    _curItemsNum = 1;
+                }
+                curLineButtons.Add(InlineKeyboardButton.WithCallbackData(item.Name, "buy/" + item.Identifier));
+            }
+            if(curLineButtons.Count > 0) { autoInline.Add(curLineButtons); }
+            autoInline.Add(new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData("🔙 Назад", backRoute) });
+            return new InlineKeyboardMarkup(autoInline);
+        }
+
 
         public static bool IsValidTelegramTag(string tag)
         {
@@ -76,6 +106,15 @@ namespace TelegramBot
                 throw new ArgumentException("Invalid domain name.", "email");
             }
             return match.Groups[1].Value + domainName;
+        }
+
+        public static string GetGoodsString(Purchase purch)
+        {
+            StringBuilder goods = new StringBuilder(); foreach (var good in purch.Goods)
+            {
+                goods.Append("• "+ Items.All.FirstOrDefault(v => v.Identifier == good).Name + "\r\n");
+            }
+            return goods.ToString();
         }
     }
 }

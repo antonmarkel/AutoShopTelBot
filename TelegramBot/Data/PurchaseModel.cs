@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,9 @@ namespace TelegramBot.Data
 {
     public class PurchaseModel
     {
-        public int ID { get; set; }
+        [Key]
+        public int ID { get; set; } = 0;
+        public int Identifier { get; set; }
         public ulong Cost { get; set; }
         public long? CustomerID { get; set; }
         public string CustomerName { get; set; }
@@ -27,7 +30,7 @@ namespace TelegramBot.Data
         }
         public PurchaseModel(int ID, ulong Cost, long? CustomerID, string? customerName, string PaymentSystem, string JsonGoods, string Date, ushort State, string data, string PictFileID)
         {
-            this.ID = ID;
+            this.Identifier = ID;
             this.Cost = Cost;
             this.JsonGoods = JsonGoods;
             this.Date = Date;

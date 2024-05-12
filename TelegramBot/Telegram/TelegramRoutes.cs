@@ -80,7 +80,7 @@ namespace TelegramBot.TelegramAPI
                 long userId = long.Parse(data[0]);
                 int ID = int.Parse(data[1]);
                 long ownerID = long.Parse(data[2]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == ID);
                 if(purch == null) { await _botClient.SendMessage(new ChatId(ownerID), "Заказ был прерван!");return; }
                 ChatId cChat = new ChatId(userId);
                 if (!_Bot.CurrentPurchase.ContainsKey(chat)) _Bot.CurrentPurchase.Add(chat, ID);
@@ -91,13 +91,13 @@ namespace TelegramBot.TelegramAPI
                             {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Код не пришел",$"emer|{purch.CustomerID}|{purch.ID}"),
+                                    InlineKeyboardButton.WithCallbackData("Код не пришел",$"emer|{purch.CustomerID}|{purch.Identifier}"),
                                  },
                             });
             
-                await _botClient.SendMessage(cChat, $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {purch.Date} (МСК)\r\n🗳️ Категория: {purch.ToModel().GetCategories()[0]}\r\n🛍️ Товары:\r\n {Utils.GetGoodsString(purch.ToModel())}\r\n💰 Цена: {purch.Cost}₽\r\n\r\n🔔 Введите 6-значный код с почты\r\n\U0001f9fe Формат: 123456\r\n\r\n⚠️ Кода нет 5 минут? – Нажмите на кнопку👇",replyMarkup:inlineKeyboard);
+                await _botClient.SendMessage(cChat, $"\U0001f6d2 Заказ: {purch.Identifier}\r\n👤 Статус: Отправление данных\r\n⏰ Время: {purch.Date} (МСК)\r\n🗳️ Категория: {purch.ToModel().GetCategories()[0]}\r\n🛍️ Товары:\r\n {Utils.GetGoodsString(purch.ToModel())}\r\n💰 Цена: {purch.Cost}₽\r\n\r\n🔔 Введите 6-значный код с почты\r\n\U0001f9fe Формат: 123456\r\n\r\n⚠️ Кода нет 5 минут? – Нажмите на кнопку👇",replyMarkup:inlineKeyboard);
                 _Bot.ChatStates[cChat] = ChatState.GetCode;
-                var item = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);
+                var item = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == ID);
                 item.Data += "\r\n";
                 item.State = 1;
                 await _Bot.Context.SaveChangesAsync();
@@ -109,7 +109,7 @@ namespace TelegramBot.TelegramAPI
                 var data = route[5..].Split('|');
                 long userId = long.Parse(data[0]);
                 int ID = int.Parse(data[1]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);if (purch == null) return;
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == ID);if (purch == null) return;
                 ChatId cChat = new ChatId(userId);
                 StringBuilder goods = new StringBuilder(); foreach (var good in purch.ToModel().Goods)
                 {
@@ -128,7 +128,7 @@ namespace TelegramBot.TelegramAPI
                                  },
                            });
                 await _botClient.SendMessage(cChat, $"\U0001f6d2 Заказ: {ID}\r\n👤 Статус: Выполнено ✅\r\n⏰ Время: {purch.Date}(МСК)\r\n🗳️ Категория: {purch.ToModel().GetCategories()[0]}\r\n🛍️ Товары:\r\n {goods.ToString()}💰 Цена: {purch.Cost}₽\r\n\r\n🔔 Проверяйте наличие доната на аккаунте и оставляйте отзыв по кнопке внизу👇\r\n\r\n", replyMarkup: inlineKeyboard);
-                var item = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);
+                var item = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == ID);
                 item.State = 2;
                 await _Bot.Context.SaveChangesAsync();
                 return;
@@ -136,7 +136,7 @@ namespace TelegramBot.TelegramAPI
             else if (pref == "remo")
             {
                 var id = int.Parse(route[5..]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == id);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == id);
                 if(purch == null) { await _botClient.SendMessage(chat, "Заказ не найден"); }
                 else
                 {
@@ -162,7 +162,7 @@ namespace TelegramBot.TelegramAPI
                 var data = route[5..].Split('|');
                 var custID = long.Parse(data[0]);
                 var purchID = int.Parse(data[1]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID);
                 purch.State = 0;
                 //if (purch != null) TelegramBot.Context.Purchases.Remove(purch);
                 
@@ -182,7 +182,7 @@ namespace TelegramBot.TelegramAPI
                                  }
 
                           });
-                await _botClient.SendMessage(ch, $"⛔️ Ваш заказ <u>{purch.ID}</u> задержан.\r\n\r\n<b>Причина:</b> Некорректный email.\r\n\r\nПожалуйста, введите почту ещё раз.\r\n\r\n⚠️ Если вы считаете, что это произошло по ошибке, обратитесь в поддержку, нажав на кнопку👇",replyMarkup:inlineKeyboard,parseMode:ParseMode.Html);
+                await _botClient.SendMessage(ch, $"⛔️ Ваш заказ <u>{purch.Identifier}</u> задержан.\r\n\r\n<b>Причина:</b> Некорректный email.\r\n\r\nПожалуйста, введите почту ещё раз.\r\n\r\n⚠️ Если вы считаете, что это произошло по ошибке, обратитесь в поддержку, нажав на кнопку👇",replyMarkup:inlineKeyboard,parseMode:ParseMode.Html);
                 _Bot.ChatStates[ch] = ChatState.GetEmail;
             }
             else if (pref == "empa")
@@ -201,7 +201,7 @@ namespace TelegramBot.TelegramAPI
 
                           });
 
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID);
                 await _botClient.SendMessage(new ChatId(custID), $"⛔️Ваш заказ {purchID} задержан.\r\n<b>Причина:</b> Оплата не найдена!\r\nЕсли вы не оплатили - оплатите, следуя инструциям.\r\nЕсли вы считайте,что произошла ошибке,обратитесь в поддержку!",replyMarkup: inlineKeyboard,parseMode:ParseMode.Html);
             }
             else if (pref == "etag")
@@ -219,7 +219,7 @@ namespace TelegramBot.TelegramAPI
 
                           });
 
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID);
                 await _botClient.SendMessage(new ChatId(custID), $"⛔Пожалуйста,введите тэг еще раз!", replyMarkup: inlineKeyboard, parseMode: ParseMode.Html);
                 _Bot.ChatStates[new ChatId(custID)] = ChatState.GetTag;
             }
@@ -228,14 +228,14 @@ namespace TelegramBot.TelegramAPI
                 var data = route[5..].Split('|');
                 var custID = long.Parse(data[0]);
                 var purchID = int.Parse(data[1]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID);
                 _Bot.ChatStates[new ChatId(custID)] = ChatState.GetCode;
                 inlineKeyboard = new InlineKeyboardMarkup(
                           new List<InlineKeyboardButton[]>()
                           {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Код не пришел",$"emer|{purch.CustomerID}|{purch.ID}"),
+                                    InlineKeyboardButton.WithCallbackData("Код не пришел",$"emer|{purch.CustomerID}|{purch.Identifier}"),
                                  },
                           });
                 await _botClient.SendMessage(new ChatId(custID), $"🔔 Уведомление от менеджера.\r\n\r\n⛔️ Вы ввели неверный код с почты:\r\n\r\n⚠️ Формат: 123456\r\n✅ Пример: 782861\r\n\r\n👇 Проверьте последнее сообщение от Supercell ID во входящих, спам, промо-акциях в своём приложении/сайте и напишите последний код повторно:",replyMarkup:inlineKeyboard);
@@ -286,11 +286,11 @@ namespace TelegramBot.TelegramAPI
                 var custID = long.Parse(data[0]);
                 var purchID = int.Parse(data[1]);
 
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID);
                 if(purch == null) { await _botClient.SendMessage(chat, "Заказ был уже удален!");return; }
                 _Bot.Context.Purchases.Remove(purch);
                 await _Bot.Context.SaveChangesAsync();
-                await _botClient.SendMessage(new ChatId(custID), $"❌ Ваш заказ [{purch.ID}] был отменён Менеджером.");
+                await _botClient.SendMessage(new ChatId(custID), $"❌ Ваш заказ [{purch.Identifier}] был отменён Менеджером.");
 
             }
             else if (pref == "game")
@@ -298,14 +298,14 @@ namespace TelegramBot.TelegramAPI
                 var data = route[5..].Split('|');
                 var custID = long.Parse(data[0]);
                 var purchID = int.Parse(data[1]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID);
                 Owner.OwnerAPI.ShowTask(chat, _botClient, _Bot, purch.ToModel());
                 if (purch == null) { await _botClient.SendMessage(chat, "Заказ был удален!"); return; }
                 StringBuilder goods = new StringBuilder(); foreach (var good in purch.ToModel().Goods)
                 {
                     goods.Append(Items.All.FirstOrDefault(v => v.Identifier == good).Name + "\r\n");
                 }
-                await _botClient.SendMessage(new ChatId(custID), $"\U0001f6d2 Заказ: {purch.ID}\r\n👤 Статус: Выполнение заказа\r\n⏰ Время: {purch.Date}(МСК)\r\n🗳️ Категория: {purch.ToModel().GetCategories()[0]}\r\n🛍️ Товар:\r\n{goods.ToString()}\r\n💰 Цена: {purch.Cost}₽\r\n\r\n🔔 Менеджер принялся выполнять ваш заказ. Пожалуйста, не заходите в игру до уведомления о завершении.");
+                await _botClient.SendMessage(new ChatId(custID), $"\U0001f6d2 Заказ: {purch.Identifier}\r\n👤 Статус: Выполнение заказа\r\n⏰ Время: {purch.Date}(МСК)\r\n🗳️ Категория: {purch.ToModel().GetCategories()[0]}\r\n🛍️ Товар:\r\n{goods.ToString()}\r\n💰 Цена: {purch.Cost}₽\r\n\r\n🔔 Менеджер принялся выполнять ваш заказ. Пожалуйста, не заходите в игру до уведомления о завершении.");
 
             }
             else if (pref == "docu")
@@ -314,7 +314,7 @@ namespace TelegramBot.TelegramAPI
                 long userId = long.Parse(data[0]);
                 int ID = int.Parse(data[1]);
                 long ownerID = long.Parse(data[2]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == ID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == ID);
 
                 ChatId cChat = new ChatId(userId);
                 inlineKeyboard = new InlineKeyboardMarkup(
@@ -322,24 +322,24 @@ namespace TelegramBot.TelegramAPI
                            {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Отменить заказ",$"remo|{purch.ID}"),
+                                    InlineKeyboardButton.WithCallbackData("Отменить заказ",$"remo|{purch.Identifier}"),
                                  }
 
                            });
-                await _botClient.SendMessage(cChat, $"Заказ: {purch.ID}\r\n🔔 Мы не нашли оплаты с вашим ID, поэтому менеджер запросил у вас доказательства перевода денежных средств (чек/скриншот/история) \r\n\r\n📃 Пришлите пожалуйста скриншот/файл с доказательством,либо нажмите на кнопку \"Отменить заказ\"", replyMarkup: inlineKeyboard) ;
+                await _botClient.SendMessage(cChat, $"Заказ: {purch.Identifier}\r\n🔔 Мы не нашли оплаты с вашим ID, поэтому менеджер запросил у вас доказательства перевода денежных средств (чек/скриншот/история) \r\n\r\n📃 Пришлите пожалуйста скриншот/файл с доказательством,либо нажмите на кнопку \"Отменить заказ\"", replyMarkup: inlineKeyboard) ;
                 _Bot.CurrentPurchase[cChat] = ID;
                 _Bot.ChatStates[cChat] = ChatState.GetDoc;
             }
             else if(pref == "undo")
             {
                 int purchID = int.Parse(route[5..].Split('|')[0]);
-                _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID).State = 1;
+                _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID).State = 1;
                 await _Bot.Context.SaveChangesAsync();
             }
             else if(pref == "show")
             {
                 int purchID = int.Parse(route[5..].Split('|')[0]);
-                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.ID == purchID);
+                var purch = _Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purchID);
                 if(purch == null)
                 {
                     await _botClient.SendMessage(chat, "Заказ не найден!");
@@ -533,7 +533,7 @@ namespace TelegramBot.TelegramAPI
 
                                             new InlineKeyboardButton[]
                                             {
-                                                 InlineKeyboardButton.WithCallbackData("Отменить заказ",$"remo|{ph.ID}"),
+                                                 InlineKeyboardButton.WithCallbackData("Отменить заказ",$"remo|{ph.Identifier}"),
                                             },
                                      });
                                     string state = string.Empty;
@@ -630,7 +630,7 @@ namespace TelegramBot.TelegramAPI
                       
                         if (purchase.GetCategories()[0] != "Telegram")
                         {
-                            await _botClient.SendMessage(chat, $"\U0001f6d2 Заказ: {purchase.ID}\r\n👤 Статус: Отправление данных\r\n🏦Способ оплаты: {purchase.PaymentSystem}\r\n⏰ Время: {purchase.Date}(МСК)\r\n\r\n🔔 Введите вашу почту Supercell ID \r\n⚠️ Формат: email@gmail.com", parseMode: ParseMode.Html);
+                            await _botClient.SendMessage(chat, $"\U0001f6d2 Заказ: {purchase.Identifier}\r\n👤 Статус: Отправление данных\r\n🏦Способ оплаты: {purchase.PaymentSystem}\r\n⏰ Время: {purchase.Date}(МСК)\r\n\r\n🔔 Введите вашу почту Supercell ID \r\n⚠️ Формат: email@gmail.com", parseMode: ParseMode.Html);
                             _Bot.ChatStates[chat] = ChatState.GetEmail;
                         }
                         else
@@ -641,7 +641,7 @@ namespace TelegramBot.TelegramAPI
                  
                         await _Bot.Context.Purchases.AddAsync(purchase.ToDataModel());
                         await _Bot.Context.SaveChangesAsync();
-                        _Bot.CurrentPurchase[chat] = purchase.ID;
+                        _Bot.CurrentPurchase[chat] = purchase.Identifier;
                         _Bot.Cart[chat].Clear();
                         //await _Bot.SetRoute("main", chat);
                         return;
@@ -680,7 +680,7 @@ namespace TelegramBot.TelegramAPI
                         DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
 
                         int id = (new Random()).Next();
-                        while (_Bot.Context.Purchases.FirstOrDefault(v => v.ID == id) != null) id = (new Random()).Next();
+                        while (_Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == id) != null) id = (new Random()).Next();
                         Purchase purchase = new Purchase(id, sum, chat.Identifier, chat.Username, "Сбер", _goods, moscowTime.ToShortDateString() + " | " + moscowTime.TimeOfDay.ToString()[0..8], 0, string.Empty, null);
                         if (purchase.GetCategories().Count > 1)
                         {
@@ -701,7 +701,7 @@ namespace TelegramBot.TelegramAPI
 
                             // await _botClient.SendMessage(chat, $"\U0001f6d2 ID заказа: {purchase.ID}\r\n💴 Статус: Оплата\r\n💰 Цена: {purchase.Cost}₽\r\n🏦 Переведите {purchase.Cost}₽ по любому из данных реквизитов ниже:\r\n\r\n❗️Важно. В сообщениях/комментариях к оплате напишите любое из данных слов -  \"<code>Подарок</code>\", \"<code>Отданный долг</code>\", \"<code>Держи</code>\". \r\n\r\n❗️Это поможет как мне, так и вам быстрее выполнить заказ и сохранить ваши деньги.\r\n\r\n✅ После оплаты нажмите на кнопку \"Я оплатил\".\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф СБП • <code>+79939245527</code>\r\n┃ Тинькофф • <code>2200700850594697</code>\r\n┃ СберБанк • <code>5336690284035310</code>\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ – заказ будет отменён менеджером.", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                             _Bot.GoingToBuy[chat] = purchase;
-                            await _botClient.SendMessage(chat, $"✅Для оплаты заказа #{purchase.ID} переведите {purchase.Cost}₽ на карту\r\n\r\n\U0001f7e2Сбер СБП: <code>+79006245527</code>\r\n\U0001f7e1Сбер: <code>5336690284035310</code>\r\n📨Получатель: Алла\r\n\r\n❗️Важно. В сообщениях/комментариях к оплате напишите любое из данных слов -  \"<code>Подарок</code>\", \"<code>Отданный долг</code>\", \"<code>Держи</code>\". \r\n\r\n❗️Это поможет как мне, так и вам быстрее выполнить заказ и сохранить ваши деньги.\r\n\r\n📜Сохраните чек!\r\n\r\n🔰После оплаты нажмите на кнопку \"Я оплатил\"", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
+                            await _botClient.SendMessage(chat, $"✅Для оплаты заказа #{purchase.Identifier} переведите {purchase.Cost}₽ на карту\r\n\r\n\U0001f7e2Сбер СБП: <code>+79006245527</code>\r\n\U0001f7e1Сбер: <code>5336690284035310</code>\r\n📨Получатель: Алла\r\n\r\n❗️Важно. В сообщениях/комментариях к оплате напишите любое из данных слов -  \"<code>Подарок</code>\", \"<code>Отданный долг</code>\", \"<code>Держи</code>\". \r\n\r\n❗️Это поможет как мне, так и вам быстрее выполнить заказ и сохранить ваши деньги.\r\n\r\n📜Сохраните чек!\r\n\r\n🔰После оплаты нажмите на кнопку \"Я оплатил\"", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                             //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 ID заказа: {id}\r\n💴 Статус: Оплата\r\n💰 Цена: {sum}₽\r\n🏦 Для оплаты заказа нужно перевести {sum}₽ по любому из данных реквизитов и в комментариях к оплате написать ID вашего заказа \\-  [`793925754`]\r\nПосле оплаты нажмите на \"Я оплатил\"\\.\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф • \\+79939245527\r\n┃ Тинькофф • 2200700850594697\r\n┃ СберБанк • 5336690284035310\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ \\– заказ будет отменён менеджером\\.\r\n\r\n🙋‍♂️ Если возникнут вопросы с оплатой \\- обратитесь в поддержку: @lancaster_brawl", replyMarkup: inlineKeyboard, parseMode: ParseMode.MarkdownV2);
                             //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n💴 Процесс: Оплата\r\n🏦 Для оплаты Вы должны перевести {sum}Р по любому из данных реквизитов и <strong>\r\n\r\n!!!написать {id} в сообщениях к оплате!!! \r\n\r\n</strong>. После оплаты нажмите \"Я оплатил\".\r\n\r\n🎫 Реквизиты:\r\n\r\nТинькофф • +79939245527\r\nТинькофф • 2200700850594697\r\nСбер • 5336690284035310\r\n\r\n⚠️ Чтобы вы не потеряли вашу оплату, зафиксируйте данный перевод с номером заказа на скриншот/видео. \r\n\r\n🙋‍♂️ Если возникнут вопросы - обратитесь в поддержку: @firov1", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                         }
@@ -741,7 +741,7 @@ namespace TelegramBot.TelegramAPI
                         int id = (new Random()).Next();
                         TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
                         DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
-                        while (_Bot.Context.Purchases.FirstOrDefault(v => v.ID == id) != null) id = (new Random()).Next();
+                        while (_Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == id) != null) id = (new Random()).Next();
                         Purchase purchase = new Purchase(id, sum, chat.Identifier, chat.Username, "Альфа Банк(Беларусь)", _goods, moscowTime.ToShortDateString() + " | " + moscowTime.TimeOfDay.ToString()[0..8], 0, string.Empty, null);
                         if (purchase.GetCategories().Count > 1)
                         {
@@ -762,7 +762,7 @@ namespace TelegramBot.TelegramAPI
 
                             // await _botClient.SendMessage(chat, $"\U0001f6d2 ID заказа: {purchase.ID}\r\n💴 Статус: Оплата\r\n💰 Цена: {purchase.Cost}₽\r\n🏦 Переведите {purchase.Cost}₽ по любому из данных реквизитов ниже:\r\n\r\n❗️Важно. В сообщениях/комментариях к оплате напишите любое из данных слов -  \"<code>Подарок</code>\", \"<code>Отданный долг</code>\", \"<code>Держи</code>\". \r\n\r\n❗️Это поможет как мне, так и вам быстрее выполнить заказ и сохранить ваши деньги.\r\n\r\n✅ После оплаты нажмите на кнопку \"Я оплатил\".\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф СБП • <code>+79939245527</code>\r\n┃ Тинькофф • <code>2200700850594697</code>\r\n┃ СберБанк • <code>5336690284035310</code>\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ – заказ будет отменён менеджером.", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                             _Bot.GoingToBuy[chat] = purchase;
-                            await _botClient.SendMessage(chat, $"✅Для оплаты заказа #{purchase.ID} переведите {purchase.Cost}₽({string.Format("{0:f2}",(double)purchase.Cost/100d*3.6d)}Br) на карту\r\n\r\n 🟡Альфа банк BY: <code>4585220004614714</code> \r\n\r\n📜Сохраните чек!\r\n\r\n🔰После оплаты нажмите на кнопку \"Я оплатил\"", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
+                            await _botClient.SendMessage(chat, $"✅Для оплаты заказа #{purchase.Identifier} переведите {purchase.Cost}₽({string.Format("{0:f2}",(double)purchase.Cost/100d*3.6d)}Br) на карту\r\n\r\n 🟡Альфа банк BY: <code>4585220004614714</code> \r\n\r\n📜Сохраните чек!\r\n\r\n🔰После оплаты нажмите на кнопку \"Я оплатил\"", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                             //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 ID заказа: {id}\r\n💴 Статус: Оплата\r\n💰 Цена: {sum}₽\r\n🏦 Для оплаты заказа нужно перевести {sum}₽ по любому из данных реквизитов и в комментариях к оплате написать ID вашего заказа \\-  [`793925754`]\r\nПосле оплаты нажмите на \"Я оплатил\"\\.\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф • \\+79939245527\r\n┃ Тинькофф • 2200700850594697\r\n┃ СберБанк • 5336690284035310\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ \\– заказ будет отменён менеджером\\.\r\n\r\n🙋‍♂️ Если возникнут вопросы с оплатой \\- обратитесь в поддержку: @lancaster_brawl", replyMarkup: inlineKeyboard, parseMode: ParseMode.MarkdownV2);
                             //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n💴 Процесс: Оплата\r\n🏦 Для оплаты Вы должны перевести {sum}Р по любому из данных реквизитов и <strong>\r\n\r\n!!!написать {id} в сообщениях к оплате!!! \r\n\r\n</strong>. После оплаты нажмите \"Я оплатил\".\r\n\r\n🎫 Реквизиты:\r\n\r\nТинькофф • +79939245527\r\nТинькофф • 2200700850594697\r\nСбер • 5336690284035310\r\n\r\n⚠️ Чтобы вы не потеряли вашу оплату, зафиксируйте данный перевод с номером заказа на скриншот/видео. \r\n\r\n🙋‍♂️ Если возникнут вопросы - обратитесь в поддержку: @firov1", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                         }
@@ -802,7 +802,7 @@ namespace TelegramBot.TelegramAPI
                         int id = (new Random()).Next();
                         TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
                         DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
-                        while (_Bot.Context.Purchases.FirstOrDefault(v => v.ID == id) != null) id = (new Random()).Next();
+                        while (_Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == id) != null) id = (new Random()).Next();
                         Purchase purchase = new Purchase(id, sum, chat.Identifier, chat.Username, "Тинькофф", _goods, moscowTime.ToShortDateString() + " | " + moscowTime.TimeOfDay.ToString()[0..8], 0, string.Empty, null);
                         if (purchase.GetCategories().Count > 1)
                         {
@@ -823,7 +823,7 @@ namespace TelegramBot.TelegramAPI
 
                             // await _botClient.SendMessage(chat, $"\U0001f6d2 ID заказа: {purchase.ID}\r\n💴 Статус: Оплата\r\n💰 Цена: {purchase.Cost}₽\r\n🏦 Переведите {purchase.Cost}₽ по любому из данных реквизитов ниже:\r\n\r\n❗️Важно. В сообщениях/комментариях к оплате напишите любое из данных слов -  \"<code>Подарок</code>\", \"<code>Отданный долг</code>\", \"<code>Держи</code>\". \r\n\r\n❗️Это поможет как мне, так и вам быстрее выполнить заказ и сохранить ваши деньги.\r\n\r\n✅ После оплаты нажмите на кнопку \"Я оплатил\".\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф СБП • <code>+79939245527</code>\r\n┃ Тинькофф • <code>2200700850594697</code>\r\n┃ СберБанк • <code>5336690284035310</code>\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ – заказ будет отменён менеджером.", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                             _Bot.GoingToBuy[chat] = purchase;
-                            await _botClient.SendMessage(chat, $"✅Для оплаты заказа #{purchase.ID} переведите {purchase.Cost}₽ на карту\r\n\r\n\U0001f7e2Тинькофф СБП: <code>+79939245527</code>\r\n\U0001f7e1Тинькофф: <code>2200700850594697</code>\r\n📨Получатель: Константин\r\n\r\n❗️Важно. В сообщениях/комментариях к оплате напишите любое из данных слов -  \"<code>Подарок</code>\", \"<code>Отданный долг</code>\", \"<code>Держи</code>\". \r\n\r\n❗️Это поможет как мне, так и вам быстрее выполнить заказ и сохранить ваши деньги.\r\n\r\n📜Сохраните чек!\r\n\r\n🔰После оплаты нажмите на кнопку \"Я оплатил\"",replyMarkup:cancelPayKeyboard, parseMode: ParseMode.Html);
+                            await _botClient.SendMessage(chat, $"✅Для оплаты заказа #{purchase.Identifier} переведите {purchase.Cost}₽ на карту\r\n\r\n\U0001f7e2Тинькофф СБП: <code>+79939245527</code>\r\n\U0001f7e1Тинькофф: <code>2200700850594697</code>\r\n📨Получатель: Константин\r\n\r\n❗️Важно. В сообщениях/комментариях к оплате напишите любое из данных слов -  \"<code>Подарок</code>\", \"<code>Отданный долг</code>\", \"<code>Держи</code>\". \r\n\r\n❗️Это поможет как мне, так и вам быстрее выполнить заказ и сохранить ваши деньги.\r\n\r\n📜Сохраните чек!\r\n\r\n🔰После оплаты нажмите на кнопку \"Я оплатил\"",replyMarkup:cancelPayKeyboard, parseMode: ParseMode.Html);
                             //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 ID заказа: {id}\r\n💴 Статус: Оплата\r\n💰 Цена: {sum}₽\r\n🏦 Для оплаты заказа нужно перевести {sum}₽ по любому из данных реквизитов и в комментариях к оплате написать ID вашего заказа \\-  [`793925754`]\r\nПосле оплаты нажмите на \"Я оплатил\"\\.\r\n\r\n┏━━━━━━━━━━━━━━━━━━━━━┓\r\n┃ Тинькофф • \\+79939245527\r\n┃ Тинькофф • 2200700850594697\r\n┃ СберБанк • 5336690284035310\r\n┗━━━━━━━━━━━━━━━━━━━━━┛\r\n\r\n⚠️ Если вы нажмёте кнопку \"Я оплатил\" не оплатив заказ \\– заказ будет отменён менеджером\\.\r\n\r\n🙋‍♂️ Если возникнут вопросы с оплатой \\- обратитесь в поддержку: @lancaster_brawl", replyMarkup: inlineKeyboard, parseMode: ParseMode.MarkdownV2);
                             //await _botClient.SendTextMessageAsync(chat, $"\U0001f6d2 Заказ: {id}\r\n💴 Процесс: Оплата\r\n🏦 Для оплаты Вы должны перевести {sum}Р по любому из данных реквизитов и <strong>\r\n\r\n!!!написать {id} в сообщениях к оплате!!! \r\n\r\n</strong>. После оплаты нажмите \"Я оплатил\".\r\n\r\n🎫 Реквизиты:\r\n\r\nТинькофф • +79939245527\r\nТинькофф • 2200700850594697\r\nСбер • 5336690284035310\r\n\r\n⚠️ Чтобы вы не потеряли вашу оплату, зафиксируйте данный перевод с номером заказа на скриншот/видео. \r\n\r\n🙋‍♂️ Если возникнут вопросы - обратитесь в поддержку: @firov1", replyMarkup: cancelPayKeyboard, parseMode: ParseMode.Html);
                         }
@@ -1019,14 +1019,14 @@ namespace TelegramBot.TelegramAPI
                 case "main/items/royale":
                     {
                         var markup = Utils.GetMarkupForItems("Clash Royale",maxLineLength:25);
-                        await _botClient.SendPhoto(chat, Resources.Resources.ClashPict, caption: "🛍️ Товары для категории: Clash Royale      ", replyMarkup: markup);
+                        await _botClient.SendPhoto(chat, Resources.Resources.ClashBasePict, caption: "🛍️ Товары для категории: Clash Royale      ", replyMarkup: markup);
                         return;
                     }
                 case "main/items/clans":
                     {
 
                         var markup = Utils.GetMarkupForItems("Clash of Clans", maxLineLength: 25);
-                        await _botClient.SendPhoto(chat, Resources.Resources.ClansPict, caption: "🛍️ Товары категории: Clash of Clans", replyMarkup:markup);
+                        await _botClient.SendPhoto(chat, Resources.Resources.ClansBasePict, caption: "🛍️ Товары категории: Clash of Clans", replyMarkup:markup);
                         return;
                     }
             }

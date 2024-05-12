@@ -65,7 +65,7 @@ namespace TelegramBot.Owner
 
         public static async Task ShowTask(ChatId chat,ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot,Purchase purch)
         {
-            if(_Bot.Context.Purchases.FirstOrDefault(v => v.ID == purch.ID) == null)
+            if(_Bot.Context.Purchases.FirstOrDefault(v => v.Identifier == purch.Identifier) == null)
             {
                 await _botClient.SendMessage(chat, "Заказ не найден!");
                 return;
@@ -82,32 +82,32 @@ namespace TelegramBot.Owner
 
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Запросить код","warn/" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
+                                    InlineKeyboardButton.WithCallbackData("Запросить код","warn/" + $"{purch.CustomerID}" + "|" + $"{purch.Identifier}" + "|" + $"{chat.Identifier}"),
 
                                  },
                                    new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Оплата не найдена","docu/" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
+                                    InlineKeyboardButton.WithCallbackData("Оплата не найдена","docu/" + $"{purch.CustomerID}" + "|" + $"{purch.Identifier}" + "|" + $"{chat.Identifier}"),
 
                                  },
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Запросить имейл еще раз",$"emer|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Запросить имейл еще раз",$"emer|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Нет оплаты(Удалить заказ)",$"empa|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Нет оплаты(Удалить заказ)",$"empa|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
 
@@ -123,7 +123,7 @@ namespace TelegramBot.Owner
                 var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
                 goodsString.Append($"{j + 1}) {item.Category} : {item.Name}\r\n");
             }
-            string preAnswer = $"ID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+            string preAnswer = $"Номер заказа: {purch.ID}\r\nID заказа: {purch.Identifier}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
         
             if (purch.Pict != null)
             {
@@ -141,37 +141,37 @@ namespace TelegramBot.Owner
                           {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Завершен","done|" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
+                                    InlineKeyboardButton.WithCallbackData("Завершен","done|" + $"{purch.CustomerID}" + "|" + $"{purch.Identifier}" + "|" + $"{chat.Identifier}"),
 
                                  },
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Предупредить пользователя!",$"game|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Предупредить пользователя!",$"game|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
                                
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
                                  new InlineKeyboardButton[]
                                  {
-                                     InlineKeyboardButton.WithCallbackData("Запросить тэг для Telegram",$"etag|{purch.CustomerID}|{purch.ID}")
+                                     InlineKeyboardButton.WithCallbackData("Запросить тэг для Telegram",$"etag|{purch.CustomerID}|{purch.Identifier}")
                                  },
                                        new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.Identifier}")
 
                                  },
                                    new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Возврат","done|" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
+                                    InlineKeyboardButton.WithCallbackData("Возврат","done|" + $"{purch.CustomerID}" + "|" + $"{purch.Identifier}" + "|" + $"{chat.Identifier}"),
 
                                  },
                                     new InlineKeyboardButton[]
@@ -186,7 +186,7 @@ namespace TelegramBot.Owner
                 var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
                 goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
             }
-            string preAnswer = $"ID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+            string preAnswer = $"Номер заказа: {purch.ID}\r\nID заказа: {purch.Identifier}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
           
             if (purch.Pict != null)
             {
@@ -204,156 +204,25 @@ namespace TelegramBot.Owner
                         {
                                  new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Не завершен","undo|" + $"{purch.ID}"),
+                                    InlineKeyboardButton.WithCallbackData("Не завершен","undo|" + $"{purch.Identifier}"),
 
                                  },
                        });
-            await _botClient.SendMessage(chat, $"{purch.ID} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nID пользователя: {purch.CustomerID}\r\n{purch.Goods}\r\n{purch.Date}", replyMarkup: inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+            await _botClient.SendMessage(chat, $"Номер заказа: {purch.ID}\r\n{purch.Identifier} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nID пользователя: {purch.CustomerID}\r\n{purch.Goods}\r\n{purch.Date}", replyMarkup: inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
         }
 
 
         public static async Task ShowIncomingTasks(ChatId chat,ITelegramBotClient _botClient,TelegramAPI.TelegramBot _Bot)
         {
-            var purchases = _Bot.Context.Purchases.Where(v => v.State == 0).Select(v => new Purchase(v)).ToList();
-            if (purchases.Count == 0) { await _botClient.SendMessage(chat, "Увы,но пока входящих заказов не поступало!"); return; }
-            for (int i = 0;i < purchases.Count;i++) { 
-                var purch = purchases[i];   
-                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
-                         new List<InlineKeyboardButton[]>()
-                          {
-
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Запросить код","warn/" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
-
-                                 },
-                                   new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Оплата не найдена","docu/" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
-
-                                 },
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Запросить имейл еще раз",$"emer|{purch.CustomerID}|{purch.ID}")
-
-                                 },
-                                    new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
-
-                                 },
-                                  new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Нет оплаты(Удалить заказ)",$"empa|{purch.CustomerID}|{purch.ID}")
-
-                                 },
-                                  new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.ID}")
-
-                                 },
-                                    new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Назад","Main")
-                                 },
-
-                         }) ;
-                StringBuilder goodsString = new StringBuilder();
-                for(int j = 0;j < purch.Goods.Count;j++)
-                {
-                    var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
-                    goodsString.Append($"{j+1}) {item.Category} : {item.Name}\r\n");
-                }
-                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
-              
-                if (purch.Pict != null)
-                {
-                    await _botClient.SendPhoto(chat, purch.Pict, caption: preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-                }
-                else
-                {
-                    await _botClient.SendMessage(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-                }
-            }
+            foreach (var purch in _Bot.Context.Purchases.Where(v => v.State == 0)) await ShowIncomingTask(chat, _botClient, purch.ToModel());
         }
         public static async Task ShowActiveTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
         {
-            var purchases = _Bot.Context.Purchases.Where(v => v.State == 1).Select(v => new Purchase(v)).ToList();
-            if(purchases.Count == 0) { await _botClient.SendMessage(chat,"Нет активных заказов! Работай лучше!"); return; }
-            for(int i = 0;i <  purchases.Count;i++) 
-            {
-                var purch = purchases[i];
-                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
-                         new List<InlineKeyboardButton[]>()
-                          {
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Завершен","done|" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
-
-                                 }, 
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Запросить код еще раз",$"emco|{purch.CustomerID}|{purch.ID}")
-
-                                 },
-                                       new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
-
-                                 },
-                                  new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.ID}")
-
-                                 },
-                                    new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Назад","Main")
-                                 },
-
-                         });
-                StringBuilder goodsString = new StringBuilder();
-                for (int j = 0; j < purch.Goods.Count; j++)
-                {
-                    var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
-                    goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
-                }
-                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
-
-                if (purch.Pict != null)
-                {
-                    await _botClient.SendPhoto(chat,purch.Pict, caption: preAnswer , replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-                }
-                else
-                {
-                    await _botClient.SendMessage(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-                }
-            }
+            foreach (var purch in _Bot.Context.Purchases.Where(v => v.State == 1)) await ShowActiveTask(chat, _botClient, purch.ToModel());
         }
         public static async Task ShowFinishedTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
         {
-
-            var purchases = _Bot.Context.Purchases.Where(v => v.State == 2).Select(v => new Purchase(v)).ToList();
-            foreach (var purch in purchases)
-            {
-                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
-                        new List<InlineKeyboardButton[]>()
-                         {
-                                 new InlineKeyboardButton[]
-                                 {
-                                    InlineKeyboardButton.WithCallbackData("Не завершен","undo|" + $"{purch.ID}"),
-
-                                 },
-                        });
-
-                StringBuilder goodsString = new StringBuilder();
-                for (int j = 0; j < purch.Goods.Count; j++)
-                {
-                    var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
-                    goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
-                }
-                await _botClient.SendMessage(chat, $"{purch.ID} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nID пользователя: {purch.CustomerID}\r\n{goodsString.ToString()}\r\n{purch.Date}",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
-            }
+            foreach (var purch in _Bot.Context.Purchases.Where(v => v.State == 2)) await ShowFinishedTask(chat, _botClient, purch.ToModel());
         }
     }
 }

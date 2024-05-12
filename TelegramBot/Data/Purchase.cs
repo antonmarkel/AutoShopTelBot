@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -11,7 +12,10 @@ namespace TelegramBot.Data
 {
     public class Purchase
     {
-        public int ID { get; set; }
+
+       
+        public int ID { get; set; } 
+        public int Identifier { get; set; }
         public ulong Cost { get; set; }   
         public long? CustomerID { get;set; }
         public string CustomerName { get; set; }
@@ -26,7 +30,7 @@ namespace TelegramBot.Data
 
         public Purchase(PurchaseModel dataModel)
         {
-            ID = dataModel.ID;
+            Identifier = dataModel.Identifier;
             Cost = dataModel.Cost;
             CustomerID = dataModel.CustomerID;
             CustomerName = dataModel.CustomerName;
@@ -36,11 +40,12 @@ namespace TelegramBot.Data
             State = dataModel.State;
             Data = dataModel.Data;
             PictFileID = dataModel.PictFileID;
+            ID = dataModel.ID;
             if(dataModel.PictFileID != null)Pict = InputFile.FromFileId(dataModel.PictFileID);
         }
-        public Purchase(int iD, ulong cost, long? customerID, string customerName,string paymentSystem, List<string> goods, string date, ushort state, string data, InputFile pict)
+        public Purchase(int identifier, ulong cost, long? customerID, string customerName,string paymentSystem, List<string> goods, string date, ushort state, string data, InputFile pict)
         {
-            ID = iD;
+            Identifier = identifier;
             Cost = cost;
             CustomerID = customerID;
             CustomerName = customerName;
@@ -55,7 +60,7 @@ namespace TelegramBot.Data
 
         public PurchaseModel ToDataModel()
         {
-            return new PurchaseModel(ID, Cost, CustomerID, CustomerName,PaymentSystem, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
+            return new PurchaseModel(Identifier, Cost, CustomerID, CustomerName,PaymentSystem, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
         }
 
         public List<string> GetCategories()

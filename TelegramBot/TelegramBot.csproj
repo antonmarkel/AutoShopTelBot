@@ -8,11 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Logs.txt" />
     <None Remove="Resources\gems.jpg" />
     <None Remove="Resources\test.jpg" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Logs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\gems.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

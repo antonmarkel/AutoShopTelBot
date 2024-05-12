@@ -19,7 +19,8 @@ namespace TelegramBot.Resources
         public static readonly InputFile ClashPict = InputFile.FromFileId("AgACAgIAAxkBAAMoZjxdC7Zd8bFNMM1Tdtfy6SzuGFkAAiTTMRuCHuBJfi254YD7kWMBAAMCAANzAAM1BA");
         public static readonly InputFile ClansPict = InputFile.FromFileId("AgACAgIAAxkBAAMpZjxdH3nqxf8125IWY55X2vE4H5gAAiXTMRuCHuBJuHaRtNcxagABAQADAgADcwADNQQ");
         public static readonly InputFile ItemsPict = InputFile.FromFileId("AgACAgIAAxkBAAIDj2Y8xl1_xe5Ytyo9xjp7brutXG8sAAJW0jEbyWLpSYr0OPuqtrtyAQADAgADcwADNQQ");
-        
+        public static readonly InputFile BrawlBasePict = InputFile.FromFileId("AgACAgIAAxkBAAIJ3mY_floqrTmFFFHgHyteNDBszgTVAAIh2DEbldkAAUqaKsaM3HLFOgEAAwIAA3MAAzUE");
+       
         static Resources()
         {
             

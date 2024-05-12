@@ -15,6 +15,7 @@ namespace TelegramBot.Data
         public ulong Cost { get; set; }   
         public long? CustomerID { get;set; }
         public string CustomerName { get; set; }
+        public string PaymentSystem { get;set; }
         public List<string> Goods { get; set; }
         public string Date { get; set; } = DateTime.Now.ToShortDateString() + " Time:" + DateTime.Now.TimeOfDay.ToString();
         public ushort State { get; set; } = 0; 
@@ -29,6 +30,7 @@ namespace TelegramBot.Data
             Cost = dataModel.Cost;
             CustomerID = dataModel.CustomerID;
             CustomerName = dataModel.CustomerName;
+            PaymentSystem = dataModel.PaymentSystem;
             Goods = JsonSerializer.Deserialize<List<string>>(dataModel.JsonGoods);
             Date = dataModel.Date;
             State = dataModel.State;
@@ -36,12 +38,13 @@ namespace TelegramBot.Data
             PictFileID = dataModel.PictFileID;
             if(dataModel.PictFileID != null)Pict = InputFile.FromFileId(dataModel.PictFileID);
         }
-        public Purchase(int iD, ulong cost, long? customerID, string customerName, List<string> goods, string date, ushort state, string data, InputFile pict)
+        public Purchase(int iD, ulong cost, long? customerID, string customerName,string paymentSystem, List<string> goods, string date, ushort state, string data, InputFile pict)
         {
             ID = iD;
             Cost = cost;
             CustomerID = customerID;
             CustomerName = customerName;
+            PaymentSystem = paymentSystem;
             Goods = goods;
             Date = date;
             State = state;
@@ -52,7 +55,7 @@ namespace TelegramBot.Data
 
         public PurchaseModel ToDataModel()
         {
-            return new PurchaseModel(ID, Cost, CustomerID, CustomerName, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
+            return new PurchaseModel(ID, Cost, CustomerID, CustomerName,PaymentSystem, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
         }
 
         public List<string> GetCategories()

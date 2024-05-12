@@ -24,9 +24,14 @@ namespace TelegramBot
             new Item("brpass") { Name = "Brawl Pass",Category = "Brawl Stars", Price = 750,  },
             new Item("brpass+") { Name = "Brawl Pass+",Category = "Brawl Stars", Price = 1100, },
             new Item("brupg") { Name = "Улучшение БП на БП+",Category = "Brawl Stars", Price = 500, },
-             new Item("brblings") { Name = "     🔥 11500 блингов    ",Category = "Brawl Stars", Price = 600},
-              new Item("bractgg") { Name = "🔥 4000 монет + 2750 очков силы",Category = "Brawl Stars", Price = 1400},
-              new Item("brleon") { Name = "🔥 Гиперзаряд Леона",Category = "Brawl Stars", Price = 449},
+
+             new Item("brblings") { Name = "🔥 11500 блингов",Category = "Brawl Stars", Price = 600,IsSpecialOffer = true},
+              new Item("bractgg") { Name = "🔥 4000 монет + 2750 очков силы",Category = "Brawl Stars", Price = 1400,IsSpecialOffer = true},
+              new Item("brleon") { Name = "🔥 Гиперзаряд Леона",Category = "Brawl Stars", Price = 449,IsSpecialOffer = true},
+
+              new Item("brspec") { Name = "🔥 90 гемов",Category = "Brawl Stars", Price = 169,IsSpecialOffer = true},
+              new Item("brspec1") { Name = "🔥 150 гемов",Category = "Brawl Stars", Price = 169,IsSpecialOffer = true},
+              new Item("brspec2") { Name = "🔥 180 гемов",Category = "Brawl Stars", Price = 299,IsSpecialOffer = true},
               
            // new Item("brlili") { Name = "Новый персонаж Лили",Category ="Brawl Stars", Price = 1999, },
 
@@ -50,6 +55,7 @@ namespace TelegramBot
                   new Item("clcgoldpass") { Name = "Золотой пропуск",Category = "Clash of Clans", Price = 700},
                     new Item("clcpass") { Name = "Пропуск события",Category = "Clash of Clans", Price = 550},
                      new Item("clcvil") { Name = "Оформление деревни",Category = "Clash of Clans", Price = 750},
+                
 
               new Item("telprem1") { Name = "Телеграм преимиум на месяц",Category = "Telegram", Price = 300},
              new Item("telprem12") { Name = "Телеграм преимиум на 12 месяцев",Category = "Telegram", Price = 1800},
@@ -65,7 +71,8 @@ public class Item
         public string Category { get;set; } = string.Empty;
         public ulong Price { get; set; }
         public InputFile Picture { get; set; }
-        public async Task SendItemAsync(ITelegramBotClient _botClient, ChatId chat)
+        public bool IsSpecialOffer { get; set; } = false;
+        public async Task SendItemAsync(ITelegramBotClient _botClient, ChatId chat, string backRoute = "main/itemsPrev")
         {
             var inlineKeyboard = new InlineKeyboardMarkup(
                                new List<InlineKeyboardButton[]>()
@@ -73,11 +80,11 @@ public class Item
                                  new InlineKeyboardButton[]
                                  {
                                    InlineKeyboardButton.WithCallbackData("Да","cart/" + this.Identifier),
-                                   InlineKeyboardButton.WithCallbackData("Нет","main/itemsPrev"),
+                                   InlineKeyboardButton.WithCallbackData("Нет",backRoute),
                                  },
                                }) ;
-            if (Picture != null) await _botClient.SendPhotoAsync(chat, Picture, caption: $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?", replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-          else  await _botClient.SendTextMessageAsync(chat, $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+            if (Picture != null) await _botClient.SendPhoto(chat, Picture, caption: $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?", replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+          else  await _botClient.SendMessage(chat, $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
         }
 
         public Item(string Identifier) {  this.Identifier = Identifier; }

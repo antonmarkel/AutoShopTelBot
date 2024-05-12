@@ -42,7 +42,7 @@ namespace TelegramBot.Owner
                                         },
 
                                   });
-            await _botclient.SendTextMessageAsync(chatId,"Привествуем, хозяин!",replyMarkup:replyKeyboard);
+            await _botclient.SendMessage(chatId,"Привествуем, хозяин!",replyMarkup:replyKeyboard);
         }
 
         public static async Task NotifyOnwers(ITelegramBotClient _botClient, string message, IReplyMarkup markup = null,ParseMode? mode = null)
@@ -53,11 +53,11 @@ namespace TelegramBot.Owner
                 ChatId chatOwner = new ChatId(owner);
                 if(markup != null)
                 {
-                    await _botClient.SendTextMessageAsync(chatOwner, message, replyMarkup:markup,parseMode:mode);
+                    await _botClient.SendMessage(chatOwner, message, replyMarkup:markup,parseMode:mode);
                 }
                 else
                 {
-                    await _botClient.SendTextMessageAsync(chatOwner, message, parseMode: mode);
+                    await _botClient.SendMessage(chatOwner, message, parseMode: mode);
                 }
               
             }
@@ -67,7 +67,7 @@ namespace TelegramBot.Owner
         {
             if(_Bot.Context.Purchases.FirstOrDefault(v => v.ID == purch.ID) == null)
             {
-                await _botClient.SendTextMessageAsync(chat, "Заказ не найден!");
+                await _botClient.SendMessage(chat, "Заказ не найден!");
                 return;
             }
             if (purch.State == 0) await ShowIncomingTask(chat, _botClient, purch);
@@ -97,7 +97,7 @@ namespace TelegramBot.Owner
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
 
                                  },
                                   new InlineKeyboardButton[]
@@ -123,15 +123,15 @@ namespace TelegramBot.Owner
                 var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
                 goodsString.Append($"{j + 1}) {item.Category} : {item.Name}\r\n");
             }
-            string preAnswer = $"ID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+            string preAnswer = $"ID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
         
             if (purch.Pict != null)
             {
-                await _botClient.SendPhotoAsync(chat, purch.Pict, caption: preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                await _botClient.SendPhoto(chat, purch.Pict, caption: preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
             }
             else
             {
-                await _botClient.SendTextMessageAsync(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                await _botClient.SendMessage(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
             }
         }
         static async Task ShowActiveTask(ChatId chat,ITelegramBotClient _botClient,Purchase purch)
@@ -161,12 +161,17 @@ namespace TelegramBot.Owner
                                  },
                                        new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
 
                                  },
                                   new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithCallbackData("Удалить заказ",$"kill|{purch.CustomerID}|{purch.ID}")
+
+                                 },
+                                   new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithCallbackData("Возврат","done|" + $"{purch.CustomerID}" + "|" + $"{purch.ID}" + "|" + $"{chat.Identifier}"),
 
                                  },
                                     new InlineKeyboardButton[]
@@ -181,15 +186,15 @@ namespace TelegramBot.Owner
                 var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
                 goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
             }
-            string preAnswer = $"ID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+            string preAnswer = $"ID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
           
             if (purch.Pict != null)
             {
-                await _botClient.SendPhotoAsync(chat, purch.Pict, caption: preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                await _botClient.SendPhoto(chat, purch.Pict, caption: preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
             }
             else
             {
-                await _botClient.SendTextMessageAsync(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                await _botClient.SendMessage(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
             }
         }
         static async Task ShowFinishedTask(ChatId chat, ITelegramBotClient _botClient,Purchase purch)
@@ -203,14 +208,14 @@ namespace TelegramBot.Owner
 
                                  },
                        });
-            await _botClient.SendTextMessageAsync(chat, $"{purch.ID} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\nID пользователя: {purch.CustomerID}\r\n{purch.Goods}\r\n{purch.Date}", replyMarkup: inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+            await _botClient.SendMessage(chat, $"{purch.ID} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nID пользователя: {purch.CustomerID}\r\n{purch.Goods}\r\n{purch.Date}", replyMarkup: inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
         }
 
 
         public static async Task ShowIncomingTasks(ChatId chat,ITelegramBotClient _botClient,TelegramAPI.TelegramBot _Bot)
         {
             var purchases = _Bot.Context.Purchases.Where(v => v.State == 0).Select(v => new Purchase(v)).ToList();
-            if (purchases.Count == 0) { await _botClient.SendTextMessageAsync(chat, "Увы,но пока входящих заказов не поступало!"); return; }
+            if (purchases.Count == 0) { await _botClient.SendMessage(chat, "Увы,но пока входящих заказов не поступало!"); return; }
             for (int i = 0;i < purchases.Count;i++) { 
                 var purch = purchases[i];   
                 InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
@@ -234,7 +239,7 @@ namespace TelegramBot.Owner
                                  },
                                     new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
 
                                  },
                                   new InlineKeyboardButton[]
@@ -259,22 +264,22 @@ namespace TelegramBot.Owner
                     var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
                     goodsString.Append($"{j+1}) {item.Category} : {item.Name}\r\n");
                 }
-                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
               
                 if (purch.Pict != null)
                 {
-                    await _botClient.SendPhotoAsync(chat, purch.Pict, caption: preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                    await _botClient.SendPhoto(chat, purch.Pict, caption: preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
                 }
                 else
                 {
-                    await _botClient.SendTextMessageAsync(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                    await _botClient.SendMessage(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
                 }
             }
         }
         public static async Task ShowActiveTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
         {
             var purchases = _Bot.Context.Purchases.Where(v => v.State == 1).Select(v => new Purchase(v)).ToList();
-            if(purchases.Count == 0) { await _botClient.SendTextMessageAsync(chat,"Нет активных заказов! Работай лучше!"); return; }
+            if(purchases.Count == 0) { await _botClient.SendMessage(chat,"Нет активных заказов! Работай лучше!"); return; }
             for(int i = 0;i <  purchases.Count;i++) 
             {
                 var purch = purchases[i];
@@ -293,7 +298,7 @@ namespace TelegramBot.Owner
                                  },
                                        new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithCallbackData("Задать вопрос",$"askq|{purch.CustomerID}|{purch.ID}")
+                                    InlineKeyboardButton.WithCallbackData("Сообщение покупателю",$"askq|{purch.CustomerID}|{purch.ID}")
 
                                  },
                                   new InlineKeyboardButton[]
@@ -313,15 +318,15 @@ namespace TelegramBot.Owner
                     var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
                     goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
                 }
-                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
+                string preAnswer = $"Номер заказа:№{i + 1}\r\nID заказа: {purch.ID}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nТовары:\r\n{goodsString}\r\nИнфа по заказу:\r\n{purch.Data}\r\n {purch.Date}";
 
                 if (purch.Pict != null)
                 {
-                    await _botClient.SendPhotoAsync(chat,purch.Pict, caption: preAnswer , replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                    await _botClient.SendPhoto(chat,purch.Pict, caption: preAnswer , replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
                 }
                 else
                 {
-                    await _botClient.SendTextMessageAsync(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+                    await _botClient.SendMessage(chat, preAnswer, replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
                 }
             }
         }
@@ -347,7 +352,7 @@ namespace TelegramBot.Owner
                     var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
                     goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
                 }
-                await _botClient.SendTextMessageAsync(chat, $"{purch.ID} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\nID пользователя: {purch.CustomerID}\r\n{goodsString.ToString()}\r\n{purch.Date}",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+                await _botClient.SendMessage(chat, $"{purch.ID} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nID пользователя: {purch.CustomerID}\r\n{goodsString.ToString()}\r\n{purch.Date}",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
             }
         }
     }

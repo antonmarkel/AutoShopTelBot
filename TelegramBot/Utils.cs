@@ -5,13 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Data;
+using TelegramBot.TelegramAPI;
 
 namespace TelegramBot
 {
-    public class Utils
+    public static class Utils
     {
         public static bool IsValidCode(string code)
         {
@@ -23,7 +26,10 @@ namespace TelegramBot
             }
             return true;
         }
-        public static void Log(string message,ConsoleColor color = ConsoleColor.Black) {
+        public static async Task Log(string message,ConsoleColor color = ConsoleColor.Black) {
+
+
+
             Console.ResetColor();
             TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
             DateTime moscowTime = DateTime.UtcNow + moscowTimeZone.BaseUtcOffset;
@@ -33,16 +39,27 @@ namespace TelegramBot
             else Console.ForegroundColor = color;
             Console.WriteLine(message);
 
+
+            using (var writer = new StreamWriter("Logs.txt",true))
+            {
+              await  writer.WriteLineAsync($"[{moscowTime.ToShortTimeString()}]" + "[" + DateTime.Now.ToShortDateString() + "]" + message);
+  
+            }
+
+
+
+
         }
 
-        public static InlineKeyboardMarkup GetMarkupForItems(string category,int maxLineLength = 34,int maxItemsPerLine = 3,string backRoute = "main/items")
+        public static InlineKeyboardMarkup GetMarkupForItems(string category,int maxLineLength = 34,int maxItemsPerLine = 3,string backRoute = "main/items",bool isHot = false)
         {
             List<List<InlineKeyboardButton>> autoInline = new List<List<InlineKeyboardButton>>();
             List<InlineKeyboardButton> curLineButtons = new List<InlineKeyboardButton>();
 
             int _maxLineLen = maxLineLength, _curLineLen = 0;
             int _maxItemsPerLine = maxItemsPerLine, _curItemsNum = 0;
-            var items = Items.All.Where(v => v.Category == category).ToList();
+            var items = isHot ? Items.All.Where(v => v.Category == category && v.IsSpecialOffer) : Items.All.Where(v => v.Category == category && !v.IsSpecialOffer).ToList();
+
             foreach (var item in items)
             {
                 _curLineLen += item.Name.Length; _curItemsNum++;
@@ -56,11 +73,40 @@ namespace TelegramBot
                 curLineButtons.Add(InlineKeyboardButton.WithCallbackData(item.Name, "buy/" + item.Identifier));
             }
             if(curLineButtons.Count > 0) { autoInline.Add(curLineButtons); }
+            if(!isHot && Items.All.FirstOrDefault(v => v.Category == category &&  v.IsSpecialOffer) != null)
+            {
+                autoInline.Add(new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData("🔥 Акции 🔥", $"hots|{category}") });
+            }
             autoInline.Add(new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData("🔙 Назад", backRoute) });
             return new InlineKeyboardMarkup(autoInline);
         }
 
+        public static string GetRouteByCategory(string category)
+        {
+            string backRoute = "main/itemsPrev";
+            switch (category)
+            {
+                case "Brawl Stars":
+                    backRoute = "main/items/brawl";
+                    break;
+                case "Clash Royale":
+                    backRoute = "main/items/royale";
+                    break;
+                case "Clash of Clans":
+                    backRoute = "main/items/clans";
+                    break;
+            }
+            return backRoute;
+        }
 
+        public static async Task SendMessage(this ITelegramBotClient _botClient, ChatId chatId,string text, ParseMode? parseMode = null, IReplyMarkup? replyMarkup = null)
+        {
+            TelegramAPI.TelegramBot.CurrentBot.PreviousMessages.Add(await _botClient.SendTextMessageAsync(chatId, text, parseMode: parseMode,replyMarkup:replyMarkup));
+        }
+        public static async Task SendPhoto(this ITelegramBotClient _botClient, ChatId chatId, InputFile photo, string? caption = null, ParseMode? parseMode = null, IReplyMarkup? replyMarkup = null)
+        {
+            TelegramAPI.TelegramBot.CurrentBot.PreviousMessages.Add(await _botClient.SendPhotoAsync(chatId, photo, caption:caption, parseMode: parseMode, replyMarkup: replyMarkup));
+        }
         public static bool IsValidTelegramTag(string tag)
         {
             if (tag.Length > 0 && tag[0] == '@') return true;

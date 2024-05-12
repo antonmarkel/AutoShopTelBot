@@ -214,14 +214,17 @@ namespace TelegramBot.Owner
 
         public static async Task ShowIncomingTasks(ChatId chat,ITelegramBotClient _botClient,TelegramAPI.TelegramBot _Bot)
         {
+            if(_Bot.Context.Purchases.FirstOrDefault(v => v.State == 0) == null) { await _botClient.SendTextMessageAsync(chat, "Нет входящих заказов!");return; }
             foreach (var purch in _Bot.Context.Purchases.Where(v => v.State == 0)) await ShowIncomingTask(chat, _botClient, purch.ToModel());
         }
         public static async Task ShowActiveTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
         {
+            if (_Bot.Context.Purchases.FirstOrDefault(v => v.State == 1) == null) { await _botClient.SendTextMessageAsync(chat, "Нет активных заказов!Работай лучше!"); return; }
             foreach (var purch in _Bot.Context.Purchases.Where(v => v.State == 1)) await ShowActiveTask(chat, _botClient, purch.ToModel());
         }
         public static async Task ShowFinishedTasks(ChatId chat, ITelegramBotClient _botClient, TelegramAPI.TelegramBot _Bot)
         {
+            if (_Bot.Context.Purchases.FirstOrDefault(v => v.State == 2) == null) { await _botClient.SendTextMessageAsync(chat, "Нет завершенных заказов!Где деньги блять?!"); return; }
             foreach (var purch in _Bot.Context.Purchases.Where(v => v.State == 2)) await ShowFinishedTask(chat, _botClient, purch.ToModel());
         }
     }

@@ -18,7 +18,7 @@ namespace TelegramBot.Data
         }
         public BotDataContext() : base()
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 

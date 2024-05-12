@@ -208,7 +208,13 @@ namespace TelegramBot.Owner
 
                                  },
                        });
-            await _botClient.SendMessage(chat, $"Номер заказа: {purch.ID}\r\n{purch.Identifier} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nID пользователя: {purch.CustomerID}\r\n{purch.Goods}\r\n{purch.Date}", replyMarkup: inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+            StringBuilder goodsString = new StringBuilder();
+            for (int j = 0; j < purch.Goods.Count; j++)
+            {
+                var item = Items.All.FirstOrDefault(v => v.Identifier == purch.Goods[j]);
+                goodsString.Append($"{j + 1}){item.Category} : {item.Name}\r\n");
+            }
+            await _botClient.SendMessage(chat, $"Номер заказа: {purch.ID}\r\n{purch.Identifier} {purch.GetStringState()}\r\nОбщая цена: <b>{purch.Cost}₽</b>\r\n🏦Способ оплаты: {purch.PaymentSystem}\r\nID пользователя: {purch.CustomerID}\r\n{goodsString.ToString()}\r\n{purch.Date}", replyMarkup: inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
         }
 
 

@@ -109,7 +109,7 @@ namespace TelegramBot.TelegramAPI
         {
             using var cts = new CancellationTokenSource();
             TelegramRoutes._Bot = this;
-            StartCleaning(5 * 60);
+            StartCleaning(60 * 60);
             _botClient.StartReceiving(UpdateHandler, ErrorHanlder, _receiverOptions, cts.Token);
             await Utils.Log("Bot started", ConsoleColor.DarkGreen);
             await Task.Delay(-1);

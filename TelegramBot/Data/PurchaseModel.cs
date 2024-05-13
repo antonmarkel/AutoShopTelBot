@@ -12,8 +12,8 @@ namespace TelegramBot.Data
     public class PurchaseModel
     {
         [Key]
-        public int ID { get; set; } = 0;
         public int Identifier { get; set; }
+        public int IndexNumber { get; set; }
         public ulong Cost { get; set; }
         public long? CustomerID { get; set; }
         public string CustomerName { get; set; }
@@ -28,9 +28,10 @@ namespace TelegramBot.Data
         {
             return new Purchase(this);
         }
-        public PurchaseModel(int ID, ulong Cost, long? CustomerID, string? customerName, string PaymentSystem, string JsonGoods, string Date, ushort State, string data, string PictFileID)
+        public PurchaseModel(int identifier,int IndexNumber, ulong Cost, long? CustomerID, string? customerName, string PaymentSystem, string JsonGoods, string Date, ushort State, string data, string PictFileID)
         {
-            this.Identifier = ID;
+            this.Identifier = identifier;
+            this.IndexNumber = IndexNumber;
             this.Cost = Cost;
             this.JsonGoods = JsonGoods;
             this.Date = Date;

@@ -12,10 +12,8 @@ namespace TelegramBot.Data
 {
     public class Purchase
     {
-
-       
-        public int ID { get; set; } 
         public int Identifier { get; set; }
+        public int IndexNumber { get; set; }
         public ulong Cost { get; set; }   
         public long? CustomerID { get;set; }
         public string CustomerName { get; set; }
@@ -40,12 +38,13 @@ namespace TelegramBot.Data
             State = dataModel.State;
             Data = dataModel.Data;
             PictFileID = dataModel.PictFileID;
-            ID = dataModel.ID;
+            IndexNumber = dataModel.IndexNumber;
             if(dataModel.PictFileID != null)Pict = InputFile.FromFileId(dataModel.PictFileID);
         }
-        public Purchase(int identifier, ulong cost, long? customerID, string customerName,string paymentSystem, List<string> goods, string date, ushort state, string data, InputFile pict)
+        public Purchase(int identifier,int indexNumber, ulong cost, long? customerID, string customerName,string paymentSystem, List<string> goods, string date, ushort state, string data, InputFile pict)
         {
             Identifier = identifier;
+            IndexNumber = indexNumber;
             Cost = cost;
             CustomerID = customerID;
             CustomerName = customerName;
@@ -60,7 +59,7 @@ namespace TelegramBot.Data
 
         public PurchaseModel ToDataModel()
         {
-            return new PurchaseModel(Identifier, Cost, CustomerID, CustomerName,PaymentSystem, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
+            return new PurchaseModel(Identifier,IndexNumber, Cost, CustomerID, CustomerName,PaymentSystem, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
         }
 
         public List<string> GetCategories()

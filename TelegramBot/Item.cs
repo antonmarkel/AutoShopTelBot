@@ -29,10 +29,12 @@ namespace TelegramBot
               new Item("bractgg") { Name = "🔥 4000 монет + 2750 очков силы",Category = "Brawl Stars", Price = 1400,IsSpecialOffer = true},
               new Item("brleon") { Name = "🔥 Гиперзаряд Леона",Category = "Brawl Stars", Price = 449,IsSpecialOffer = true},
 
-              new Item("brspec") { Name = "🔥 90 гемов",Category = "Brawl Stars", Price = 169,IsSpecialOffer = true},
-              new Item("brspec1") { Name = "🔥 150 гемов",Category = "Brawl Stars", Price = 169,IsSpecialOffer = true},
-              new Item("brspec2") { Name = "🔥 180 гемов",Category = "Brawl Stars", Price = 299,IsSpecialOffer = true},
-              
+             new Item("brspec") { Name = "🔥 кредиты 4500",Category = "Brawl Stars", Price = 1700,IsSpecialOffer = true},
+             new Item("brspec1") { Name = "🔥 кредиты 4000",Category = "Brawl Stars", Price = 1999,IsSpecialOffer = true},
+             new Item("brspec2") { Name = "🔥 кредиты 3000",Category = "Brawl Stars", Price = 1999,IsSpecialOffer = true},
+              new Item("brspec3") { Name = "🔥 кредиты 1500",Category = "Brawl Stars", Price = 500,IsSpecialOffer = true},
+               new Item("brspec4") { Name = "🔥 кредиты 800",Category = "Brawl Stars", Price = 250,IsSpecialOffer = true},
+
            // new Item("brlili") { Name = "Новый персонаж Лили",Category ="Brawl Stars", Price = 1999, },
 
 

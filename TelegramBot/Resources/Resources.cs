@@ -15,7 +15,7 @@ namespace TelegramBot.Resources
         public static readonly InputFile MainPict = InputFile.FromFileId("AgACAgIAAxkBAAIDnGZBocINjxV50LypmvG1IWYElWdCAAJc2zEbw30RSk059eDhBWaYAQADAgADcwADNQQ");
        
         public static readonly InputFile AdminPict = InputFile.FromFileId("AgACAgIAAxkBAAMUZkDzj6yp-9WpP-MJ-drD1c5QlzUAAuDZMRvDfQlKJZKl2wefEkoBAAMCAANzAAM1BA");
-        public static readonly InputFile CartPict = InputFile.FromFileId("AgACAgIAAxkBAAMWZkD0BGPUD3EKYyRWJoDvBvXCHYgAAubZMRvDfQlKMJkmkxhnWikBAAMCAANzAAM1BA");
+        public static readonly InputFile CartPict = InputFile.FromFileId("AgACAgIAAxkBAAIJA2ZDexPZLwABChR_UqxWZDmLUiWXpQAC39sxG3GIIUo-iTlJZ2sJdAEAAwIAA3MAAzUE");
       
         public static readonly InputFile ClashPict = InputFile.FromFileId("AgACAgIAAxkBAAMSZkDzQgm9CjMMWmHlvMdZAAGA81C2AALe2TEbw30JSky22mxajfuyAQADAgADcwADNQQ");
         public static readonly InputFile ClansPict = InputFile.FromFileId("AgACAgIAAxkBAAMTZkDzXw2QbUB8h6CeXgVSNGQ1MVEAAt_ZMRvDfQlKjWTOco8cbmsBAAMCAANzAAM1BA");

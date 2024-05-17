@@ -160,7 +160,7 @@ namespace TelegramBot.TelegramAPI
                            
                             if (!ChatStates.ContainsKey(update.Message.Chat)) ChatStates.Add(update.Message.Chat, ChatState.Standard);
                             //Console.WriteLine($"{update.Message.Photo[0].FileId}");
-                             // return;
+                            //  return;
                             switch (ChatStates[chat])
                             {
                                 case ChatState.GetEmail:

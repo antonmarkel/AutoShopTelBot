@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 
 namespace TelegramBot.Resources
 {
@@ -24,9 +19,9 @@ namespace TelegramBot.Resources
         public static readonly InputFile ItemsPrevPict = InputFile.FromFileId("AgACAgIAAxkBAAIDn2ZBogLl11CrLHuLKz0PVZgGKFc0AAJf2zEbw30RSlQkCbgHVBVlAQADAgADcwADNQQ");
 
         public static readonly InputFile BrawlPict = InputFile.FromFileId("AgACAgIAAxkBAAMOZkDycYhCwQjNLZ2AC8B6nN-J9mMAAs_ZMRvDfQlKiaVcVrYhGUcBAAMCAANzAAM1BA");
-        public static readonly InputFile BrawlBasePict = InputFile.FromFileId("AgACAgIAAxkBAAMNZkDyJKDEMiKi97hBBjIcPKZLE3gAAsTZMRvDfQlKCw8OBx-xyq4BAAMCAANzAAM1BA");
-        public static readonly InputFile ClansBasePict = InputFile.FromFileId("AgACAgIAAxkBAAMPZkDypUpaRWwc614xBDRVHufJoicAAtHZMRvDfQlK6JEGVlZkaCQBAAMCAANzAAM1BA");
-        public static readonly InputFile ClashBasePict = InputFile.FromFileId("AgACAgIAAxkBAAMQZkDy0VDWe1wsPh7iv1dK0VCd9zEAAtLZMRvDfQlKQzvvAAGeA_YIAQADAgADcwADNQQ");
+        public static readonly InputFile BrawlBasePict = InputFile.FromFileId("AgACAgIAAxkBAAINDmZF_MNfKyj7o6zEC_SaS-1E9dCZAAKo2zEbawIxSirpSvLgFbJCAQADAgADcwADNQQ");
+        public static readonly InputFile ClansBasePict = InputFile.FromFileId("AgACAgIAAxkBAAINEGZF_PaWxlAxi6NfstmZCFYPYG6_AAKq2zEbawIxSh3zSklxsXUWAQADAgADcwADNQQ");
+        public static readonly InputFile ClashBasePict = InputFile.FromFileId("AgACAgIAAxkBAAIND2ZF_N0uyogCasvRHQhwWG0Mm1HSAAKp2zEbawIxSkBiGtJCSLXDAQADAgADcwADNQQ");
 
         public static readonly InputFile InfoPict = InputFile.FromFileId("AgACAgIAAxkBAAIDnWZBodcv0RcTzTZj3ZQtbvYgZ_I_AAJd2zEbw30RSuQB6Z-SsuPKAQADAgADcwADNQQ");
         public static readonly InputFile MyProfilePict = InputFile.FromFileId("AgACAgIAAxkBAAIDnmZBoeeRQTc9o5PQAqKM9jY45m8RAAJe2zEbw30RSn8CHLDfmCMaAQADAgADcwADNQQ");

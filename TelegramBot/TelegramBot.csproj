@@ -8,20 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\gems.jpg" />
-    <None Remove="Resources\test.jpg" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Resources\gems.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\test.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
   </ItemGroup>
 

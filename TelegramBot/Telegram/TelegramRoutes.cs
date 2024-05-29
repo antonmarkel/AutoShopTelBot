@@ -459,15 +459,17 @@ namespace TelegramBot.TelegramAPI
                                  new InlineKeyboardButton[]
                                  {
                                     InlineKeyboardButton.WithUrl("Правила","https://telegra.ph/Lancaster-Shop-05-09"),
-                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/lancaster_brawl"),
-
-
+                                    InlineKeyboardButton.WithUrl("Поддержка","https://t.me/firov1"),
                                  },
                                   new InlineKeyboardButton[]
                                  {
-                                    InlineKeyboardButton.WithUrl("Магазин","https://t.me/LanDonate"),
+                                    InlineKeyboardButton.WithUrl("Магазин","https://t.me/LancasterShop"),
                                       InlineKeyboardButton.WithUrl("Отзывы","https://t.me/LancasterReviews"),
                                        InlineKeyboardButton.WithUrl("Чат","https://t.me/LancasterChat"),
+                                 },
+                                   new InlineKeyboardButton[]
+                                 {
+                                    InlineKeyboardButton.WithUrl("Присоединяйся и зарабатывай","https://t.me/hamster_kombat_bot?start=kentId851274731"),
                                  },
                                  new InlineKeyboardButton[]
                                  {

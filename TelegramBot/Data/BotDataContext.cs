@@ -18,16 +18,16 @@ namespace TelegramBot.Data
         }
         public BotDataContext() : base()
         {
-            //Database.EnsureDeleted();
+            Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 
-            string connectionString_dedicatedServer = "Server=vultr-prod-71909da1-e560-42b9-87a4-e129adcf43cd-vultr-prod-a2dd.vultrdb.com;Port=16751;Database=telpurchases;user=vultradmin;Password=AVNS_UknBjA2afETCB9rSRx2;";
+            string connectionString_localServer = "Server=localhost;Database=testdb;user=root;Password=1111;";
 
-            optionsBuilder.UseMySql(connectionString_dedicatedServer, ServerVersion.AutoDetect(connectionString_dedicatedServer));
+            optionsBuilder.UseMySql(connectionString_localServer, ServerVersion.AutoDetect(connectionString_localServer));
         }
     }
 }

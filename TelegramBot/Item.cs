@@ -25,19 +25,23 @@ namespace TelegramBot
             new Item("brpass+") { Name = "Brawl Pass+",Category = "Brawl Stars", Price = 1000, },
             new Item("brupg") { Name = "Улучшение БП на БП+",Category = "Brawl Stars", Price = 450, },
 
-             new Item("brblings") { Name = "🔥 23000 блингов",Category = "Brawl Stars", Price = 1099,IsSpecialOffer = true},
+             //new Item("brblings") { Name = "🔥 23000 блингов",Category = "Brawl Stars", Price = 1099,IsSpecialOffer = true},
              // new Item("bractgg") { Name = "🔥 4000 монет + 2750 очков силы",Category = "Brawl Stars", Price = 1400,IsSpecialOffer = true},
              // new Item("brleon") { Name = "🔥 Гиперзаряд Леона",Category = "Brawl Stars", Price = 449,IsSpecialOffer = true},
  
-                new Item("brspec1") { Name = "🔥 90 гемов",Category = "Brawl Stars", Price = 199,IsSpecialOffer = true},
-             new Item("brspec") { Name = "🔥 60 гемов",Category = "Brawl Stars", Price = 249,IsSpecialOffer = true},
-          new Item("brspec2") { Name = "🔥 100 гемов",Category = "Brawl Stars", Price = 549,IsSpecialOffer = true},
+              //new Item("brspec1") { Name = "🔥  5000 блингов",Category = "Brawl Stars", Price = 250,IsSpecialOffer = true},
+                new Item("brspec8") { Name = "🔥 5800 блингов",Category = "Brawl Stars", Price = 349,IsSpecialOffer = true},
+
+         
+            // new Item("brspec") { Name = "🔥 10000 блингов",Category = "Brawl Stars", Price = 550,IsSpecialOffer = true},
+          /*new Item("brspec2") { Name = "🔥 100 гемов",Category = "Brawl Stars", Price = 549,IsSpecialOffer = true},
               new Item("brspec3") { Name = "🔥 190 гемов",Category = "Brawl Stars", Price = 999,IsSpecialOffer = true},
                   new Item("brspec4") { Name = "🔥 215 гемов",Category = "Brawl Stars", Price = 999,IsSpecialOffer = true},
             new Item("brspec5") { Name = "🔥 385 гемов",Category = "Brawl Stars", Price = 1999,IsSpecialOffer = true},
              new Item("brspec6") { Name = "🔥 440 гемов",Category = "Brawl Stars", Price = 1999,IsSpecialOffer = true},
                new Item("brspec7") { Name = "🔥 1050 гемов",Category = "Brawl Stars", Price = 4750,IsSpecialOffer = true},
-             
+                   new Item("brspec9") { Name = "🔥 2200 гемов",Category = "Brawl Stars", Price = 9500,IsSpecialOffer = true},
+             */
            // new Item("brlili") { Name = "Новый персонаж Лили",Category ="Brawl Stars", Price = 1999, },
 
 
@@ -98,7 +102,7 @@ public class Item
                                  },
                                }) ;
             if (Picture != null) await _botClient.SendPhoto(chat, Picture, caption: $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?", replyMarkup: inlineKeyboard, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
-          else  await _botClient.SendMessage(chat, $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>\r\n\r\n\U0001f6d2Хотите добавить в корзину?",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
+          else  await _botClient.SendMessage(chat, $"🗳️ <strong>Категория:</strong> {this.Category}\r\n🛍️ <strong>Товар:</strong> {Name}\r\n🔖 <strong>Цена:</strong> {Price}₽\r\n\r\n<strong>✅Вы выбрали товар👆</strong>",replyMarkup:inlineKeyboard,parseMode:Telegram.Bot.Types.Enums.ParseMode.Html);
         }
 
         public Item(string Identifier) {  this.Identifier = Identifier; }

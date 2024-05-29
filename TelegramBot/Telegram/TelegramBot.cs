@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -368,6 +370,31 @@ namespace TelegramBot.TelegramAPI
                                     await Owner.OwnerAPI.OwnerMenu(_botClient, chat);
                                 }
                              
+                            }
+                            else if (updateMessage == "/profit")
+                            {
+                                if (await Owner.OwnerAPI.IsOwner(chat))
+                                {
+                                    decimal totalMoneyGot = 0;
+                                    foreach(var purch in Context.Purchases.Where(v => v.State == 2))
+                                    {
+                                        totalMoneyGot += purch.Cost;
+                                    }
+                                    await _botClient.SendTextMessageAsync(chat, $"{totalMoneyGot}");
+                                }
+                            }
+                            else if (updateMessage == "/load")
+                            {
+                                if (await Owner.OwnerAPI.IsOwner(chat))
+                                {
+                                   using(var stream = new StreamWriter("back.data"))
+                                    {
+                                        var purchs = await Context.Purchases.ToListAsync();
+                                        await stream.WriteAsync(JsonConvert.SerializeObject(purchs));
+
+                                    }
+                                }
+
                             }
 
                             return;

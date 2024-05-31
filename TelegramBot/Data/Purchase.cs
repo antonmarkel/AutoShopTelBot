@@ -61,6 +61,7 @@ namespace TelegramBot.Data
         {
             return new PurchaseModel(Identifier,IndexNumber, Cost, CustomerID, CustomerName,PaymentSystem, JsonSerializer.Serialize(Goods), Date, State, Data, PictFileID);
         }
+       
 
         public List<string> GetCategories()
         {

@@ -18,14 +18,14 @@ namespace TelegramBot.Data
         }
         public BotDataContext() : base()
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 
-            string connectionString_localServer = "Server=localhost;Database=testdb;user=root;Password=1111;";
+            string connectionString_localServer = "Server=localhost;Port=3307;Database=testdb;user=root;Password=1111;";
 
             optionsBuilder.UseMySql(connectionString_localServer, ServerVersion.AutoDetect(connectionString_localServer));
         }

@@ -383,19 +383,28 @@ namespace TelegramBot.TelegramAPI
                                     await _botClient.SendTextMessageAsync(chat, $"{totalMoneyGot}");
                                 }
                             }
+                            /*
                             else if (updateMessage == "/load")
                             {
                                 if (await Owner.OwnerAPI.IsOwner(chat))
                                 {
-                                   using(var stream = new StreamWriter("back.data"))
+                                  
+                                   using(var stream = new StreamReader("back.data"))
                                     {
-                                        var purchs = await Context.Purchases.ToListAsync();
-                                        await stream.WriteAsync(JsonConvert.SerializeObject(purchs));
+                                        var purchsJS = await stream.ReadToEndAsync();
+                                        var purchs = JsonConvert.DeserializeObject<List<PurchaseModel>>(purchsJS);
+                                        foreach(var purch in purchs)
+                                        {
+                                            await Context.Purchases.AddAsync(purch);
+                                        }
+                                        await Context.SaveChangesAsync();
+                                        
 
                                     }
                                 }
 
                             }
+                            */
 
                             return;
                         }
